@@ -1,0 +1,17 @@
+{
+  "name": "Trening – Atle og Audny",
+  "short_name": "Trening",
+  "description": "Styrketrening heime: program, logg og framgang.",
+  "lang": "nn",
+  "start_url": "./#/idag",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFDF8",
+  "theme_color": "#7A3A16",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
