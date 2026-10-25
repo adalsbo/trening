@@ -24,6 +24,7 @@
     try { S = JSON.parse(localStorage.getItem(LAGER)) || null; } catch (e) { S = null; }
     if (!S || S.versjon !== 1) S = { versjon: 1, person: null, innstillingar: { kgSteg: 1 }, okter: [], vekt: [] };
     S.innstillingar = Object.assign({ kgSteg: 1 }, S.innstillingar || {});
+    if (S.sistEksport === undefined) S.sistEksport = null;
   }
   function lagre() { localStorage.setItem(LAGER, JSON.stringify(S)); }
   function toast(t) {
@@ -159,6 +160,10 @@
     if (ex.startKg === 0 && ex.targetKg) { const d = kalenderDag(iso); if (d && d.veke >= 2) return ex.targetKg; }
     return ex.startKg;
   }
+  function tidlegDefault(pid) {
+    const d = P.kalender.filter((k) => k.okt && k.dato < idag() && !S.okter.some((o) => o.person === pid && o.dato === k.dato && o.ferdig));
+    return d.length ? d[0].dato : "2026-10-19";
+  }
   function nyOkt(pid, oktBokstav, iso) {
     const dag = kalenderDag(iso);
     const o = { id: uid(), person: pid, dato: iso, start: new Date().toISOString(), okt: oktBokstav, oktNr: dag && dag.okt === oktBokstav ? dag.oktNr : null,
@@ -222,6 +227,10 @@
       h += `<div class="kort"><h3>Blokka 19.10–15.11 er ferdig</h3><p>Vel økt fritt. Forslag: <strong>økt ${forslag}</strong>${sist ? ` (sist: økt ${sist.okt})` : ""}.</p></div>`;
       if (!aktiv) h += `<div class="knapprad">${oktKnapp(forslag, `Start økt ${forslag}`)}${oktKnapp(forslag === "A" ? "B" : "A", `Start økt ${forslag === "A" ? "B" : "A"}`, "sekundar")}</div>`;
     }
+    const vd = new Date(iso + "T12:00:00").getDay();
+    const gamal = !S.sistEksport || (new Date(iso + "T12:00:00") - new Date(S.sistEksport + "T12:00:00")) / 864e5 > 6;
+    if (vd === 0 || vd === 6 || (gamal && S.okter.some((o) => o.ferdig))) h += `<div class="kort"><h3>Send loggen til OneDrive</h3>${STEG}
+      <button class="knapp stor full" id="ekspXlsxIdag">Del logg for begge (Excel)</button>${S.sistEksport ? `<p class="liten">Sist sendt: ${tilNorsk(S.sistEksport)}</p>` : ""}</div>`;
     // vekt
     h += vektKort(pid);
     app.innerHTML = h;
@@ -231,6 +240,7 @@
       const o = nyOkt(pid, b.dataset.start, iso); location.hash = "#/okt/" + o.id;
     }));
     kobleVekt(pid);
+    const ek = $("#ekspXlsxIdag"); if (ek) ek.addEventListener("click", delXlsx);
   }
 
   function vektKort(pid) {
@@ -510,6 +520,12 @@
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     return "lasta ned";
   }
+  const STEG = `<ol class="steg"><li>Trykk knappen under</li><li>Vel «Lagre i Filer»</li><li>OneDrive → DOK → Helse → Trening</li></ol>`;
+  function eksportOk(r) { if (r === "avbrote") return; S.sistEksport = idag(); lagre(); toast("Hugs: lagre i OneDrive → DOK/Helse/Trening"); }
+  async function delXlsx() {
+    try { const b = await eksporterXlsx(); eksportOk(await delFil(b, `Treningslogg_Atle_og_Audny_${idag()}.xlsx`, "Treningslogg")); }
+    catch (e) { toast("Klarte ikkje å lage Excel-fila"); }
+  }
   function lastSkript(src) { return new Promise((ok, feil) => { if (window.XLSX) return ok(); const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = feil; document.head.appendChild(s); }); }
   async function eksporterXlsx() {
     await lastSkript("vendor/xlsx.mini.min.js");
@@ -532,8 +548,13 @@
     const steg = S.innstillingar.kgSteg;
     app.innerHTML = `<h2>Meir</h2>
       <div class="kort"><h3>Person</h3><div class="knapprad">${Object.entries(P.personar).map(([id, q]) => `<button class="knapp ${id === pid ? "" : "sekundar"}" data-person="${id}">${esc(q.namn)}${id === pid ? " ✓" : ""}</button>`).join("")}</div></div>
-      <div class="kort"><h3>Del treningsloggen</h3><p>Lagar ei fil med same kolonnar som «Logg ${esc(p.namn)}» i Excel-arket. På iPhone/iPad kan du sende henne med Mail, Meldingar eller lagre i Filer.</p>
-        <div class="knapprad"><button class="knapp" id="ekspCsv">Del logg for ${esc(p.namn)} (CSV)</button><button class="knapp" id="ekspXlsx">Del logg for begge (Excel)</button></div></div>
+      <div class="kort"><h3>Legg inn tidlegare økt</h3><p class="liten">For ei økt de gløymde å registrere.</p>
+        <label class="felt" for="tidDato">Dato</label><input id="tidDato" type="date" max="${idag()}" value="${tidlegDefault(pid)}">
+        <label class="felt" for="tidOkt">Økt</label><select id="tidOkt"><option>A</option><option>B</option></select>
+        <button class="knapp stor full" id="tidLegg">Legg inn økta</button></div>
+      <div class="kort"><h3>Del treningsloggen</h3><p>Send Excel-fila til OneDrive kvar helg, så kan søndagsstatusen lese henne:</p>${STEG}
+        <button class="knapp stor full" id="ekspXlsx">Del logg for begge (Excel)</button>
+        <div class="knapprad"><button class="knapp sekundar" id="ekspCsv">Berre ${esc(p.namn)} (CSV)</button></div></div>
       <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>Data ligg berre på denne eininga. Lag ein tryggleikskopi og opne han på den andre eininga for å flytte loggen.</p>
         <div class="knapprad"><button class="knapp sekundar" id="backup">Lag tryggleikskopi</button>
         <label class="knapp sekundar" for="importFil">Hent inn tryggleikskopi</label></div>
@@ -550,11 +571,19 @@
     $("#kgSteg").addEventListener("change", (e) => { S.innstillingar.kgSteg = Number(e.target.value); lagre(); toast("Lagra"); });
     $("#ekspCsv").addEventListener("click", async () => {
       const r = await delFil(new Blob([csvFor(pid)], { type: "text/csv" }), `Logg_${p.namn}_${idag()}.csv`, `Treningslogg ${p.namn}`);
-      if (r !== "avbrote") toast(r === "delt" ? "Delt" : "Fila er lasta ned");
+      eksportOk(r);
+    });
+    const tdag = kalenderDag($("#tidDato").value); if (tdag && tdag.okt) $("#tidOkt").value = tdag.okt;
+    $("#tidDato").addEventListener("change", (e) => { const d = kalenderDag(e.target.value); if (d && d.okt) $("#tidOkt").value = d.okt; });
+    $("#tidLegg").addEventListener("click", () => {
+      const iso = $("#tidDato").value, b = $("#tidOkt").value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || iso > idag()) { toast("Vel ein dato fram til i dag"); return; }
+      const finst = S.okter.find((o) => o.person === pid && o.dato === iso && o.okt === b);
+      if (finst && finst.ferdig) { toast(`Økt ${b} ${tilNorsk(iso)} er alt registrert`); return; }
+      const o = finst || nyOkt(pid, b, iso); location.hash = "#/okt/" + o.id;
     });
     $("#ekspXlsx").addEventListener("click", async () => {
-      try { const b = await eksporterXlsx(); const r = await delFil(b, `Treningslogg_Atle_og_Audny_${idag()}.xlsx`, "Treningslogg"); if (r !== "avbrote") toast(r === "delt" ? "Delt" : "Fila er lasta ned"); }
-      catch (e) { toast("Klarte ikkje å lage Excel-fila"); }
+      await delXlsx();
     });
     $("#backup").addEventListener("click", async () => {
       const blob = new Blob([JSON.stringify({ app: "treningsapp", laga: new Date().toISOString(), data: S }, null, 1)], { type: "application/json" });
