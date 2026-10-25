@@ -25,6 +25,7 @@
     if (!S || S.versjon !== 1) S = { versjon: 1, person: null, innstillingar: { kgSteg: 1 }, okter: [], vekt: [] };
     S.innstillingar = Object.assign({ kgSteg: 1 }, S.innstillingar || {});
     if (S.sistEksport === undefined) S.sistEksport = null;
+    if (S.sistTryggleikskopi === undefined) S.sistTryggleikskopi = null;
   }
   function lagre() { localStorage.setItem(LAGER, JSON.stringify(S)); }
   function toast(t) {
@@ -443,7 +444,9 @@
     const okter = ferdigeOkter(pid);
     const iBlokk = okter.filter((o) => o.dato >= P.blokk.start && o.dato <= P.blokk.slutt);
     const vekt = S.vekt.filter((v) => v.person === pid).sort((a, b) => (a.dato > b.dato ? 1 : -1));
-    let h = `<h2>Framgang for ${esc(p.namn)}</h2>
+    const sistDato = okter.reduce((m, o) => (o.dato > m ? o.dato : m), "");
+    const visSynk = okter.length && (sistDato === idag() || !S.sistTryggleikskopi);
+    let h = (visSynk ? `<div class="kort varsel"><h3>Send loggen til den andre eininga</h3><p>Appen på iPhone og iPad har kvar si logg. Del tryggleikskopien no, og hent ho inn på den andre eininga under Meir.</p><button class="knapp stor full" id="synkSend">Send tryggleikskopi</button></div>` : "") + `<h2>Framgang for ${esc(p.namn)}</h2>
       <div class="to-kol"><div class="kort"><h3>Økter i blokka</h3><p style="font-size:2rem;margin:0"><strong>${iBlokk.length}</strong> av 12</p><p class="liten">19.10–15.11.2026 · totalt ${okter.length} fullførte</p></div>
       <div class="kort"><h3>Kroppsvekt</h3>${vekt.length ? `<p style="font-size:2rem;margin:0"><strong>${kgTekst(vekt[vekt.length - 1].kg)}</strong> kg</p><p class="liten">${pid === "atle" ? `Mål ${kgTekst(p.malVekt)} kg · ${vekt.length > 1 ? `endring ${kgTekst(Math.round((vekt[vekt.length - 1].kg - vekt[0].kg) * 10) / 10)} kg` : ""}` : `Hald over ${p.minVekt} kg`}</p>` : `<p class="liten">Ingen vekt lagra enno.</p>`}</div></div>
       <div class="kort"><h3>Vektutvikling</h3>${linjegraf(vekt.map((v) => ({ x: v.dato, y: v.kg })), { mal: pid === "atle" ? p.malVekt : p.minVekt, tittel: "Vektutvikling" })}</div>`;
@@ -470,6 +473,7 @@
       return `<tr><td><a href="#/okt/${o.id}">${tilNorsk(o.dato)}</a></td><td>${o.okt}</td><td>${o.score || "–"}</td><td>${n}</td></tr>`;
     }).join("")}</tbody></table>` : `<p>Ingen fullførte økter enno.</p>`}</div>`;
     app.innerHTML = h;
+    const sb = $("#synkSend"); if (sb) sb.addEventListener("click", delTryggleikskopi);
     if (valEx) { const g = $("#exGraf"); if (g) g.scrollIntoView(); }
   }
 
@@ -520,6 +524,13 @@
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     return "lasta ned";
   }
+  async function delTryggleikskopi() {
+    const blob = new Blob([JSON.stringify({ app: "treningsapp", laga: new Date().toISOString(), data: S }, null, 1)], { type: "application/json" });
+    const r = await delFil(blob, `Trening_tryggleikskopi_${idag()}.json`, "Tryggleikskopi");
+    if (r === "avbrote") return;
+    S.sistTryggleikskopi = idag(); lagre();
+    toast("Opne appen på den andre eininga → Meir → Hent inn tryggleikskopi");
+  }
   const STEG = `<ol class="steg"><li>Trykk knappen under</li><li>Vel «Lagre i Filer»</li><li>OneDrive → DOK → Helse → Trening</li></ol>`;
   function eksportOk(r) { if (r === "avbrote") return; S.sistEksport = idag(); lagre(); toast("Hugs: lagre i OneDrive → DOK/Helse/Trening"); }
   async function delXlsx() {
@@ -555,9 +566,10 @@
       <div class="kort"><h3>Del treningsloggen</h3><p>Send Excel-fila til OneDrive kvar helg, så kan søndagsstatusen lese henne:</p>${STEG}
         <button class="knapp stor full" id="ekspXlsx">Del logg for begge (Excel)</button>
         <div class="knapprad"><button class="knapp sekundar" id="ekspCsv">Berre ${esc(p.namn)} (CSV)</button></div></div>
-      <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>Data ligg berre på denne eininga. Lag ein tryggleikskopi og opne han på den andre eininga for å flytte loggen.</p>
-        <div class="knapprad"><button class="knapp sekundar" id="backup">Lag tryggleikskopi</button>
-        <label class="knapp sekundar" for="importFil">Hent inn tryggleikskopi</label></div>
+      <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:</p>
+        <ol class="steg"><li>På eininga du nettopp treningslogga: trykk «Send tryggleikskopi» (AirDrop eller Lagre i Filer)</li><li>På den andre eininga: Meir → Hent inn tryggleikskopi → vel fila</li><li>Økter vert slått saman; like økter vert ikkje dobla</li></ol>
+        <button class="knapp stor full" id="backup">Send tryggleikskopi</button>
+        <label class="knapp stor full sekundar" for="importFil" style="margin-top:.5rem">Hent inn tryggleikskopi</label>${S.sistTryggleikskopi ? `<p class="liten">Sist sendt frå denne eininga: ${tilNorsk(S.sistTryggleikskopi)}</p>` : ""}
         <input type="file" id="importFil" accept="application/json,.json" class="skjult">
         <p class="liten">Ved innhenting blir økter og vekt slått saman. Like økter blir ikkje dobla.</p></div>
       <div class="kort"><h3>Steg på manualane</h3><p>Kor mykje + og − endrar kg (manualane går frå 3 til 24 kg).</p>
@@ -585,11 +597,7 @@
     $("#ekspXlsx").addEventListener("click", async () => {
       await delXlsx();
     });
-    $("#backup").addEventListener("click", async () => {
-      const blob = new Blob([JSON.stringify({ app: "treningsapp", laga: new Date().toISOString(), data: S }, null, 1)], { type: "application/json" });
-      const r = await delFil(blob, `Trening_tryggleikskopi_${idag()}.json`, "Tryggleikskopi");
-      if (r !== "avbrote") toast("Tryggleikskopi laga");
-    });
+    $("#backup").addEventListener("click", delTryggleikskopi);
     $("#importFil").addEventListener("change", async (e) => {
       const f = e.target.files[0]; if (!f) return;
       try {
