@@ -80,7 +80,7 @@ main{max-width:860px;margin:0 auto;padding:12px 14px;outline:none}
 .score button[aria-pressed="true"]{background:var(--brun);color:#fff;border-color:var(--brun)}
 .score button.s4[aria-pressed="true"],.score button.s5[aria-pressed="true"]{background:#A01818;border-color:#A01818}
 label.felt{display:block;font-weight:700;margin:10px 0 4px}
-input[type=text],input[type=number],input[type=date],textarea,select{width:100%;font-size:1.1rem;min-height:56px;padding:10px 12px;
+input[type=text],input[type=password],input[type=number],input[type=date],textarea,select{width:100%;font-size:1.1rem;min-height:56px;padding:10px 12px;
   border:2px solid var(--linje);border-radius:12px;background:#fff;color:var(--tekst);font-family:inherit}
 textarea{min-height:80px}
 details{margin:10px 0}

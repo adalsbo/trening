@@ -26,8 +26,109 @@
     S.innstillingar = Object.assign({ kgSteg: 1 }, S.innstillingar || {});
     if (S.sistEksport === undefined) S.sistEksport = null;
     if (S.sistTryggleikskopi === undefined) S.sistTryggleikskopi = null;
+    if (S.sistSynk === undefined) S.sistSynk = null;
+    if (!Array.isArray(S.sletta)) S.sletta = [];
   }
-  function lagre() { localStorage.setItem(LAGER, JSON.stringify(S)); }
+  function lagreLokalt() { localStorage.setItem(LAGER, JSON.stringify(S)); }
+  function lagre() { lagreLokalt(); planSynk(); }
+
+  // ---------- synk via privat GitHub-repo ----------
+  // Nykelen ligg BERRE i eigen localStorage-nykel – aldri i S, logg.json eller tryggleikskopien.
+  const GH = { api: "https://api.github.com", owner: "adalsbo", repo: "trening-logg", path: "logg.json" };
+  const TOKEN_NYKEL = "treningsapp-gh-token";
+  const hentToken = () => { try { return localStorage.getItem(TOKEN_NYKEL) || ""; } catch (e) { return ""; } };
+  let synkStatus = "", synkPaagar = null, synkTimar = null;
+  const tidTekst = (isoTid) => { const d = new Date(isoTid); return `${tilNorsk(isoDato(d))} kl. ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const nyast = (...t) => t.filter(Boolean).sort().pop() || null;
+  const oktTid = (o) => o.slutt || o.start || "";
+  function mergeState(lokal, fjern) {
+    const ut = Object.assign({}, lokal, { versjon: 1 });
+    if (!fjern || !Array.isArray(fjern.okter)) return ut;
+    const sletta = new Set([...(lokal.sletta || []), ...(fjern.sletta || [])]);
+    const okter = (lokal.okter || []).slice();
+    for (const o of fjern.okter) {
+      const i = okter.findIndex((x) => x.id === o.id);
+      if (i < 0) okter.push(o); else if (oktTid(o) > oktTid(okter[i])) okter[i] = o;
+    }
+    const vekt = (lokal.vekt || []).slice();
+    for (const v of fjern.vekt || []) if (!vekt.some((x) => x.person === v.person && x.dato === v.dato)) vekt.push(v);
+    ut.okter = okter.filter((o) => !sletta.has(o.id));
+    ut.vekt = vekt; ut.sletta = [...sletta];
+    ut.sistSynk = nyast(lokal.sistSynk, fjern.sistSynk);
+    return ut;
+  }
+  // Det som vert delt mellom einingane (ikkje person, innstillingar eller eksportdatoar)
+  const delt = (d) => ({ versjon: 1, okter: d.okter || [], vekt: d.vekt || [], sletta: d.sletta || [], sistSynk: d.sistSynk || null });
+  const likDelt = (a, b) => { const k = (d) => JSON.stringify({ o: d.okter.slice().sort((x, y) => (x.id > y.id ? 1 : -1)), v: d.vekt.slice().sort((x, y) => (x.person + x.dato > y.person + y.dato ? 1 : -1)), s: d.sletta.slice().sort() }); return k(a) === k(b); };
+  class SynkFeil extends Error { constructor(kode) { super("synk " + kode); this.kode = kode; } }
+  async function ghKall(metode, body) {
+    let r;
+    try {
+      r = await fetch(`${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`, {
+        method: metode, cache: "no-store",
+        headers: { Authorization: "Bearer " + hentToken(), Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) { throw new SynkFeil("nett"); }
+    if (!r.ok) throw new SynkFeil(r.status);
+    return r.json();
+  }
+  async function hentFjern() {
+    const j = await ghKall("GET");
+    let data = null;
+    try { data = JSON.parse(decodeURIComponent(escape(atob(String(j.content || "").replace(/\s/g, ""))))); } catch (e) { data = null; }
+    return { data: data && Array.isArray(data.okter) ? data : null, sha: j.sha };
+  }
+  async function skrivFjern(data, sha) {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 1))));
+    return ghKall("PUT", { message: "Synk frå app", content, sha, branch: "main" });
+  }
+  // Hent → slå saman → skriv berre viss noko er nytt. Prøver éin gong til ved 409/422 (nokon skreiv i mellomtida).
+  async function synkEin(forsok) {
+    const { data, sha } = await hentFjern();
+    const for_ = JSON.stringify({ o: S.okter, v: S.vekt });
+    S = mergeState(S, data);
+    const endraLokalt = JSON.stringify({ o: S.okter, v: S.vekt }) !== for_;
+    const no = new Date().toISOString();
+    if (!data || !likDelt(delt(S), delt(data))) {
+      try { await skrivFjern(delt(Object.assign({}, S, { sistSynk: no })), sha); }
+      catch (e) { if (forsok < 1 && (e.kode === 409 || e.kode === 422)) return (await synkEin(forsok + 1)) || endraLokalt; throw e; }
+    }
+    S.sistSynk = no; lagreLokalt();
+    return endraLokalt;
+  }
+  async function synk({ manuell = false, stille = false } = {}) {
+    clearTimeout(synkTimar); synkTimar = null;
+    if (!hentToken()) return false;
+    while (synkPaagar) { await synkPaagar.catch(() => {}); }
+    synkPaagar = (async () => {
+      try {
+        const endra = await synkEin(0);
+        synkStatus = "";
+        if (endra) bevarScroll(rute); else if ((location.hash || "").startsWith("#/meir")) visMeirStatus();
+        if (manuell) toast(endra ? "Synka – nye data henta" : "Synka");
+        return endra;
+      } catch (e) {
+        const k = e && e.kode;
+        if (k === 401 || k === 403) { synkStatus = "Nykelen verkar ikkje."; toast("Nykelen verkar ikkje. Sjekk token under Meir."); }
+        else if (k === 404) { synkStatus = "Finn ikkje repoet trening-logg."; toast("Finn ikkje trening-logg. Sjekk at nykelen har tilgang til repoet."); }
+        else { synkStatus = k === "nett" ? "Ikkje nett – prøver seinare." : "Synk feila – prøver seinare."; if (!stille) toast(k === "nett" ? "Ikkje nett – synkar seinare" : "Synk feila – prøver seinare"); }
+        if ((location.hash || "").startsWith("#/meir")) visMeirStatus();
+        return false;
+      }
+    })();
+    try { return await synkPaagar; } finally { synkPaagar = null; }
+  }
+  function planSynk(ms = 20000) {
+    if (!hentToken()) return;
+    clearTimeout(synkTimar); synkTimar = setTimeout(() => synk({ stille: true }), ms);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && synkTimar) synk({ stille: true }); });
+  function visMeirStatus() {
+    const el = $("#synkStatus"); if (!el) return;
+    const t = hentToken();
+    el.innerHTML = !t ? "Status: <strong>Ikkje sett opp</strong>" : `Status: <strong>${synkStatus ? esc(synkStatus) : S.sistSynk ? "Synka" : "Nykel lagra – ikkje synka enno"}</strong>${S.sistSynk ? `<br><span class="liten">Sist synka: ${tidTekst(S.sistSynk)}</span>` : ""}`;
+  }
   function toast(t) {
     const el = $("#toast"); el.textContent = t; el.hidden = false;
     clearTimeout(toast._t); toast._t = setTimeout(() => (el.hidden = true), 2600);
@@ -380,12 +481,13 @@
     if (f) f.addEventListener("click", () => {
       const ingen = !Object.values(okt.ovingar).some((d) => d.sett.some((s) => s.ferdig));
       if (ingen && !confirm("Ingen sett er haka av. Vil du likevel fullføre økta?")) return;
-      okt.ferdig = true; okt.slutt = new Date().toISOString(); lagre(); stoppTimar();
+      okt.ferdig = true; okt.slutt = new Date().toISOString(); lagreLokalt(); stoppTimar();
       toast("Økta er lagra. Bra jobba!"); location.hash = "#/framgang";
+      synk();
     });
     $("#slettOkt").addEventListener("click", () => {
       if (!confirm("Vil du slette heile økta? Dette kan ikkje angrast.")) return;
-      S.okter = S.okter.filter((o) => o.id !== okt.id); lagre(); stoppTimar(); location.hash = "#/idag";
+      S.okter = S.okter.filter((o) => o.id !== okt.id); S.sletta.push(okt.id); lagre(); stoppTimar(); location.hash = "#/idag";
     });
     vekeLas();
   }
@@ -445,7 +547,7 @@
     const iBlokk = okter.filter((o) => o.dato >= P.blokk.start && o.dato <= P.blokk.slutt);
     const vekt = S.vekt.filter((v) => v.person === pid).sort((a, b) => (a.dato > b.dato ? 1 : -1));
     const sistDato = okter.reduce((m, o) => (o.dato > m ? o.dato : m), "");
-    const visSynk = okter.length && (sistDato === idag() || !S.sistTryggleikskopi);
+    const visSynk = !hentToken() && okter.length && (sistDato === idag() || !S.sistTryggleikskopi);
     let h = (visSynk ? `<div class="kort varsel"><h3>Send loggen til den andre eininga</h3><p>Appen på iPhone og iPad har kvar si logg. Del tryggleikskopien no, og hent ho inn på den andre eininga under Meir.</p><button class="knapp stor full" id="synkSend">Send tryggleikskopi</button></div>` : "") + `<h2>Framgang for ${esc(p.namn)}</h2>
       <div class="to-kol"><div class="kort"><h3>Økter i blokka</h3><p style="font-size:2rem;margin:0"><strong>${iBlokk.length}</strong> av 12</p><p class="liten">19.10–15.11.2026 · totalt ${okter.length} fullførte</p></div>
       <div class="kort"><h3>Kroppsvekt</h3>${vekt.length ? `<p style="font-size:2rem;margin:0"><strong>${kgTekst(vekt[vekt.length - 1].kg)}</strong> kg</p><p class="liten">${pid === "atle" ? `Mål ${kgTekst(p.malVekt)} kg · ${vekt.length > 1 ? `endring ${kgTekst(Math.round((vekt[vekt.length - 1].kg - vekt[0].kg) * 10) / 10)} kg` : ""}` : `Hald over ${p.minVekt} kg`}</p>` : `<p class="liten">Ingen vekt lagra enno.</p>`}</div></div>
@@ -566,7 +668,13 @@
       <div class="kort"><h3>Del treningsloggen</h3><p>Send Excel-fila til OneDrive kvar helg, så kan søndagsstatusen lese henne:</p>${STEG}
         <button class="knapp stor full" id="ekspXlsx">Del logg for begge (Excel)</button>
         <div class="knapprad"><button class="knapp sekundar" id="ekspCsv">Berre ${esc(p.namn)} (CSV)</button></div></div>
-      <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:</p>
+      <div class="kort"><h3>Synk via GitHub</h3><p id="synkStatus"></p>
+        <p class="liten">Lag ein fine-grained token på GitHub med tilgang berre til repoet trening-logg (Contents: Read and write). Lim inn her på både iPhone og iPad.</p>
+        <label class="felt" for="ghToken">GitHub-nykel (token)</label><input id="ghToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${hentToken() ? "Nykel er lagra" : "github_pat_…"}">
+        <button class="knapp stor full" id="lagreToken">Lagre nykel</button>
+        ${hentToken() ? `<button class="knapp stor full" id="synkNo" style="margin-top:.5rem">Synk no</button><div class="knapprad"><button class="knapp sekundar" id="fjernToken">Fjern nykel</button></div>` : ""}
+        <p class="liten">Når nykelen er lagra, synkar appen sjølv: ved opning, når ei økt er ferdig, og litt etter endringar.</p></div>
+      <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>${hentToken() ? "Synk går automatisk via GitHub. Tryggleikskopi er ekstra backup." : "Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:"}</p>
         <ol class="steg"><li>På eininga du nettopp treningslogga: trykk «Send tryggleikskopi» (AirDrop eller Lagre i Filer)</li><li>På den andre eininga: Meir → Hent inn tryggleikskopi → vel fila</li><li>Økter vert slått saman; like økter vert ikkje dobla</li></ol>
         <button class="knapp stor full" id="backup">Send tryggleikskopi</button>
         <label class="knapp stor full sekundar" for="importFil" style="margin-top:.5rem">Hent inn tryggleikskopi</label>${S.sistTryggleikskopi ? `<p class="liten">Sist sendt frå denne eininga: ${tilNorsk(S.sistTryggleikskopi)}</p>` : ""}
@@ -598,15 +706,27 @@
       await delXlsx();
     });
     $("#backup").addEventListener("click", delTryggleikskopi);
+    visMeirStatus();
+    $("#lagreToken").addEventListener("click", async () => {
+      const t = $("#ghToken").value.trim();
+      if (!t) { toast("Lim inn nykelen først"); return; }
+      localStorage.setItem(TOKEN_NYKEL, t); synkStatus = ""; visMeir();
+      await synk({ manuell: true });
+    });
+    const sn = $("#synkNo"); if (sn) sn.addEventListener("click", () => synk({ manuell: true }));
+    const ft = $("#fjernToken"); if (ft) ft.addEventListener("click", () => {
+      if (!confirm("Fjerne GitHub-nykelen frå denne eininga? Loggen her blir verande.")) return;
+      localStorage.removeItem(TOKEN_NYKEL); clearTimeout(synkTimar); synkStatus = ""; visMeir(); toast("Nykelen er fjerna");
+    });
     $("#importFil").addEventListener("change", async (e) => {
       const f = e.target.files[0]; if (!f) return;
       try {
         const inn = JSON.parse(await f.text()); const d = inn.data || inn;
         if (!d || !Array.isArray(d.okter)) throw new Error("ugyldig");
-        let nyeO = 0, nyeV = 0;
-        for (const o of d.okter) { const i = S.okter.findIndex((x) => x.id === o.id); if (i < 0) { S.okter.push(o); nyeO++; } else if ((o.slutt || o.start) > (S.okter[i].slutt || S.okter[i].start)) S.okter[i] = o; }
-        for (const v of d.vekt || []) { if (!S.vekt.some((x) => x.person === v.person && x.dato === v.dato)) { S.vekt.push(v); nyeV++; } }
-        lagre(); toast(`Henta inn ${nyeO} nye økter og ${nyeV} vektmålingar`);
+        const fO = S.okter.length, fV = S.vekt.length;
+        S = mergeState(S, d); lagreLokalt();
+        toast(`Henta inn ${S.okter.length - fO} nye økter og ${S.vekt.length - fV} vektmålingar`);
+        synk();
       } catch (err) { toast("Fila kunne ikkje lesast. Vel ein tryggleikskopi frå appen."); }
       e.target.value = "";
     });
@@ -638,8 +758,9 @@
       P = await r.json();
     } catch (e) { app.innerHTML = `<div class="kort varsel"><p>Klarte ikkje å laste programmet. Opne appen på nytt med nett.</p></div>`; return; }
     rute();
+    if (hentToken()) setTimeout(() => synk({ stille: true }), 300);
     if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
   }
-  window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S };
+  window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S, mergeState, synk };
   init();
 })();

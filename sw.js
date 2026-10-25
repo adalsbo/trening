@@ -1,5 +1,5 @@
 /* Service worker: alt blir lagra lokalt så appen verkar utan nett. Auk VERSJON ved endringar. */
-const VERSJON = "treningsapp-v6";
+const VERSJON = "treningsapp-v7";
 const FILER = ["./", "index.html", "css/app.css", "js/app.js", "data/program.json", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "icons/icon-maskable-512.png", "vendor/xlsx.mini.min.js"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(VERSJON).then((c) => c.addAll(FILER)).then(() => self.skipWaiting())); });
