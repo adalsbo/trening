@@ -28,9 +28,11 @@
     if (S.sistTryggleikskopi === undefined) S.sistTryggleikskopi = null;
     if (S.sistSynk === undefined) S.sistSynk = null;
     if (!Array.isArray(S.sletta)) S.sletta = [];
+    if (S.synkPending === undefined) S.synkPending = false;
   }
   function lagreLokalt() { localStorage.setItem(LAGER, JSON.stringify(S)); }
-  function lagre() { lagreLokalt(); planSynk(); }
+  function merkeSynkPending() { S.synkPending = true; }
+  function lagre() { merkeSynkPending(); lagreLokalt(); planSynk(); }
 
   // ---------- synk via privat GitHub-repo ----------
   // Nykelen ligg BERRE i eigen localStorage-nykel – aldri i S, logg.json eller tryggleikskopien.
@@ -65,7 +67,7 @@
     let r;
     try {
       r = await fetch(`${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`, {
-        method: metode, cache: "no-store",
+        method: metode, cache: "no-store", keepalive: true,
         headers: { Authorization: "Bearer " + hentToken(), Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
@@ -94,7 +96,7 @@
       try { await skrivFjern(delt(Object.assign({}, S, { sistSynk: no })), sha); }
       catch (e) { if (forsok < 1 && (e.kode === 409 || e.kode === 422)) return (await synkEin(forsok + 1)) || endraLokalt; throw e; }
     }
-    S.sistSynk = no; lagreLokalt();
+    S.sistSynk = no; S.synkPending = false; lagreLokalt();
     return endraLokalt;
   }
   async function synk({ manuell = false, stille = false } = {}) {
@@ -119,15 +121,24 @@
     })();
     try { return await synkPaagar; } finally { synkPaagar = null; }
   }
-  function planSynk(ms = 20000) {
+  function planSynk(ms = 3000) {
     if (!hentToken()) return;
     clearTimeout(synkTimar); synkTimar = setTimeout(() => synk({ stille: true }), ms);
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && synkTimar) synk({ stille: true }); });
+  function synkOmTrengst() {
+    if (!hentToken()) return;
+    if (synkTimar || S.synkPending) synk({ stille: true });
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") synkOmTrengst();
+    else if (S && S.synkPending) synk({ stille: true });
+  });
+  window.addEventListener("pagehide", () => synkOmTrengst());
   function visMeirStatus() {
     const el = $("#synkStatus"); if (!el) return;
     const t = hentToken();
-    el.innerHTML = !t ? "Status: <strong>Ikkje sett opp</strong>" : `Status: <strong>${synkStatus ? esc(synkStatus) : S.sistSynk ? "Synka" : "Nykel lagra – ikkje synka enno"}</strong>${S.sistSynk ? `<br><span class="liten">Sist synka: ${tidTekst(S.sistSynk)}</span>` : ""}`;
+    const statusTekst = synkStatus ? esc(synkStatus) : S.synkPending ? "Ventar på synk…" : S.sistSynk ? "Synka" : "Nykel lagra – ikkje synka enno";
+    el.innerHTML = !t ? "Status: <strong>Ikkje sett opp</strong>" : `Status: <strong>${statusTekst}</strong>${S.sistSynk ? `<br><span class="liten">Sist synka: ${tidTekst(S.sistSynk)}</span>` : ""}`;
   }
   function toast(t) {
     const el = $("#toast"); el.textContent = t; el.hidden = false;
@@ -481,7 +492,7 @@
     if (f) f.addEventListener("click", () => {
       const ingen = !Object.values(okt.ovingar).some((d) => d.sett.some((s) => s.ferdig));
       if (ingen && !confirm("Ingen sett er haka av. Vil du likevel fullføre økta?")) return;
-      okt.ferdig = true; okt.slutt = new Date().toISOString(); lagreLokalt(); stoppTimar();
+      okt.ferdig = true; okt.slutt = new Date().toISOString(); merkeSynkPending(); lagreLokalt(); stoppTimar();
       toast("Økta er lagra. Bra jobba!"); location.hash = "#/framgang";
       synk();
     });
@@ -724,7 +735,7 @@
         const inn = JSON.parse(await f.text()); const d = inn.data || inn;
         if (!d || !Array.isArray(d.okter)) throw new Error("ugyldig");
         const fO = S.okter.length, fV = S.vekt.length;
-        S = mergeState(S, d); lagreLokalt();
+        S = mergeState(S, d); merkeSynkPending(); lagreLokalt();
         toast(`Henta inn ${S.okter.length - fO} nye økter og ${S.vekt.length - fV} vektmålingar`);
         synk();
       } catch (err) { toast("Fila kunne ikkje lesast. Vel ein tryggleikskopi frå appen."); }
