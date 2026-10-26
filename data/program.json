@@ -5,8 +5,25 @@
   "slutt": "2026-11-15"
  },
  "manual": {
-  "min": 3,
-  "max": 24
+  "min": 2,
+  "max": 22,
+  "trinn": [
+   2,
+   3,
+   4.5,
+   5.5,
+   6.5,
+   7.5,
+   8.5,
+   9,
+   10,
+   12,
+   14.5,
+   16,
+   18,
+   20,
+   22
+  ]
  },
  "personar": {
   "atle": {
@@ -877,7 +894,7 @@
   "utstyr": [
    {
     "utstyr": "Justerbare manualar, 3–24 kg per manual (to stk)",
-    "tekst": "Alle vektøvingane. 24 kg per manual er taket: sjå «Meir → Progresjon» for korleis Atle held fram når han når 24 kg. Audny startar på lettaste innstilling (3 kg) der det trengst."
+    "tekst": "Alle vektøvingane. 22 kg per manual er taket: sjå «Meir → Progresjon» for korleis Atle held fram når han når 22 kg. Audny startar på lettaste innstilling (3 kg) der det trengst."
    },
    {
     "utstyr": "Benk (flat, helst med skråstilling)",
@@ -1206,8 +1223,8 @@
   },
   {
    "steg": "3. Auk vekta",
-   "regel": "Når de klarer alle sett øvst i intervallet med god teknikk to økter på rad: auk til neste innstilling på manualen (minste steg), og gå tilbake til nedste talet.",
-   "doeme": "3 × 12 med 16 kg to gonger → 3 × 8 med neste innstilling."
+   "regel": "Når de klarer alle sett øvst i intervallet med god teknikk to økter på rad: auk til neste trinn på dei variable manualane (2, 3, 4,5, 5,5, 6,5, 7,5, 8,5, 9, 10, 12, 14,5, 16, 18, 20, 22 kg), og gå tilbake til nedste talet.",
+   "doeme": "3 × 12 med 16 kg to gonger → 3 × 8 med 18 kg."
   },
   {
    "steg": "4. Éin ting om gongen",
@@ -1241,7 +1258,7 @@
   },
   {
    "steg": "Tids-/meterøvingar",
-   "regel": "Planke, sideplanke: +5 s per veke. Bæring: lengre tur først, så neste innstilling på manualane.",
+   "regel": "Når de klarer alle sett øvst i intervallet med god teknikk to økter på rad: auk til neste trinn på dei variable manualane (2, 3, 4,5, 5,5, 6,5, 7,5, 8,5, 9, 10, 12, 14,5, 16, 18, 20, 22 kg), og gå tilbake til nedste talet.",
    "doeme": "Sideplanke 20 s → 25 s → 30 s."
   }
  ],

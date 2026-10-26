@@ -176,16 +176,21 @@
     if (ex.type === "manual") { const k = ferdig.map((s) => s.kg); return k.every((x) => x === k[0]); }
     return true;
   }
+  function manualTrinn() {
+    return (P.manual && P.manual.trinn && P.manual.trinn.length) ? P.manual.trinn : [P.manual.min, P.manual.max];
+  }
   function nesteKg(kg) {
-    const steg = Number(S.innstillingar.kgSteg) || 1, { min, max } = P.manual;
-    if (!kg || kg < min) return min;
-    return Math.min(max, Math.round((kg + steg) * 10) / 10);
+    const trinn = manualTrinn(), max = trinn[trinn.length - 1];
+    if (kg == null || kg < trinn[0]) return trinn[0];
+    for (let i = 0; i < trinn.length; i++) if (trinn[i] > kg + 0.05) return trinn[i];
+    return max;
   }
   function forrigeKg(kg, tillatNull) {
-    const steg = Number(S.innstillingar.kgSteg) || 1, { min } = P.manual;
-    if (kg == null) return min;
-    if (kg <= min) return tillatNull ? 0 : min;
-    return Math.max(min, Math.round((kg - steg) * 10) / 10);
+    const trinn = manualTrinn();
+    if (kg == null) return trinn[0];
+    if (kg <= trinn[0] + 0.05) return tillatNull ? 0 : trinn[0];
+    for (let i = trinn.length - 1; i >= 0; i--) if (trinn[i] < kg - 0.05) return trinn[i];
+    return tillatNull ? 0 : trinn[0];
   }
   function scoreForOkt(okt) {
     if (okt && okt.score) return okt.score;
@@ -222,9 +227,9 @@
     const kg = maxKg(siste), rep = minRep(siste);
     const toReine = nestSiste && reint(ex, siste) && reint(ex, nestSiste) && (ex.type !== "manual" || maxKg(nestSiste) === kg);
     const eining = ex.unit === "s" ? "sek" : ex.unit === "m" ? "m" : "rep";
-    // Audny: 3 kg minimum -> strikk
+    // Audny: 2 kg minimum -> strikk
     if (!atle && ex.type === "manual" && kg != null && kg <= P.manual.min && kg > 0 && rep != null && ex.repMin && rep < ex.repMin) {
-      ut.push({ type: "hald", tekst: `3 kg er lettaste innstilling. Bruk strikk (${ex.lett}) til du klarer ${ex.repMin} reine rep med 3 kg.` });
+      ut.push({ type: "hald", tekst: `2 kg er lettaste innstilling. Bruk strikk (${ex.lett}) til du klarer ${ex.repMin} reine rep med 2 kg.` });
       return ut;
     }
     if (atle && ex.type === "manual" && rep != null && ex.repMin && ex.unit === "rep" && rep < ex.repMin - 1) {
@@ -234,7 +239,7 @@
     if (toReine && !stopp) {
       if (ex.type === "manual" && ex.unit !== "s") {
         if (kg >= P.manual.max) {
-          ut.push({ type: "info", tekst: "Du er på 24 kg (taket på manualane). Auk heller med fleire rep, saktare tempo (3 s ned), 1–2 s pause i tyngste posisjon, eller eittbeins/eittarms variant." });
+          ut.push({ type: "info", tekst: "Du er på 22 kg (taket på manualane). Auk heller med fleire rep, saktare tempo (3 s ned), 1–2 s pause i tyngste posisjon, eller eittbeins/eittarms variant." });
         } else if (hald) {
           ut.push({ type: "hald", tekst: `Klar for ${kgTekst(nesteKg(kg))} kg når dagen er god – men ikkje i dag.` });
         } else if (!atle && ex.gruppe === "Press" && !trekkKlar(pid, okt)) {
@@ -669,7 +674,6 @@
   function visMeir() {
     setTittel("Meir"); markerTab("meir");
     const pid = S.person, p = person();
-    const steg = S.innstillingar.kgSteg;
     app.innerHTML = `<h2>Meir</h2>
       <div class="kort"><h3>Person</h3><div class="knapprad">${Object.entries(P.personar).map(([id, q]) => `<button class="knapp ${id === pid ? "" : "sekundar"}" data-person="${id}">${esc(q.namn)}${id === pid ? " ✓" : ""}</button>`).join("")}</div></div>
       <div class="kort"><h3>Legg inn tidlegare økt</h3><p class="liten">For ei økt de gløymde å registrere.</p>
@@ -691,15 +695,14 @@
         <label class="knapp stor full sekundar" for="importFil" style="margin-top:.5rem">Hent inn sikkerhetskopi</label>${S.sistTryggleikskopi ? `<p class="liten">Sist sendt frå denne eininga: ${tilNorsk(S.sistTryggleikskopi)}</p>` : ""}
         <input type="file" id="importFil" accept="application/json,.json" class="skjult">
         <p class="liten">Ved innhenting blir økter og vekt slått saman. Like økter blir ikkje dobla.</p></div>
-      <div class="kort"><h3>Steg på manualane</h3><p>Kor mykje + og − endrar kg (manualane går frå 3 til 24 kg).</p>
-        <select id="kgSteg">${[0.5, 1, 1.5, 2, 2.5, 3].map((v) => `<option value="${v}" ${Number(steg) === v ? "selected" : ""}>${kgTekst(v)} kg</option>`).join("")}</select></div>
+      <div class="kort"><h3>Steg på manualane</h3><p>Dei variable manualane går i desse trinna (kg). + og − hoppar til neste/førre:</p>
+        <p><strong>2, 3, 4,5, 5,5, 6,5, 7,5, 8,5, 9, 10, 12, 14,5, 16, 18, 20, 22</strong></p></div>
       <details class="kort"><summary>Progresjon – korleis de aukar</summary>${P.progresjon.map((r) => `<p><strong>${esc(r.steg)}:</strong> ${esc(r.regel)}${r.doeme ? ` <span class="liten">Døme: ${esc(r.doeme)}</span>` : ""}</p>`).join("")}</details>
       <details class="kort"><summary>Reglar</summary>${P.start.reglar.map((r) => `<p><strong>${esc(r.tittel)}</strong> ${esc(r.tekst)}</p>`).join("")}</details>
       <details class="kort"><summary>Utstyr</summary>${P.start.utstyr.map((r) => `<p><strong>${esc(r.utstyr)}:</strong> ${esc(r.tekst)}</p>`).join("")}</details>
       <div class="kort varsel"><p>${esc(P.start.atvaring || "")}</p></div>
       <p class="liten">Programdata: ${esc(P.kjelde)}, laga ${esc(P.laga)}.</p>`;
     app.querySelectorAll("[data-person]").forEach((b) => b.addEventListener("click", () => { S.person = b.dataset.person; lagre(); oppdaterPersonknapp(); visMeir(); }));
-    $("#kgSteg").addEventListener("change", (e) => { S.innstillingar.kgSteg = Number(e.target.value); lagre(); toast("Lagra"); });
     $("#ekspCsv").addEventListener("click", async () => {
       const r = await delFil(new Blob([csvFor(pid)], { type: "text/csv" }), `Logg_${p.namn}_${idag()}.csv`, `Treningslogg ${p.namn}`);
       eksportOk(r);

@@ -72,7 +72,7 @@ def program(sheet, person):
         a = ws.cell(row=r, column=1).value
         if a in ("A", "B"):
             name = g(r, "Øving")
-            kg = parse_kg(g(r, "Start-kg (manual 3–24 kg)"))
+            kg = parse_kg(g(r, "Start-kg (manual 2–22 kg)"))
             sets = parse_sets(g(r, "Sett × rep"))
             vkey = by_prog.get(name)
             note = g(r, "Ryggmerknad") if person == "atle" else g(r, "Merknad")
@@ -83,7 +83,7 @@ def program(sheet, person):
                 "status": g(r, "Frå v1 / status"),
                 "korleis": g(r, "Korleis (kort)"),
                 "settRep": g(r, "Sett × rep"), **sets,
-                "startKgTekst": g(r, "Start-kg (manual 3–24 kg)"), **kg,
+                "startKgTekst": g(r, "Start-kg (manual 2–22 kg)"), **kg,
                 "lett": g(r, "Lett-variant (urolig rygg)") or g(r, "Lett-variant"),
                 "pauseTekst": g(r, "Pause"), "pauseSek": parse_rest(g(r, "Pause")),
                 "merknad": note or "",
@@ -167,7 +167,7 @@ data = {
     "laga": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
     "kjelde": XLSX.name,
     "blokk": {"start": "2026-10-19", "slutt": "2026-11-15"},
-    "manual": {"min": 3, "max": 24},
+    "manual": {"min": 2, "max": 22, "trinn": [2, 3, 4.5, 5.5, 6.5, 7.5, 8.5, 9, 10, 12, 14.5, 16, 18, 20, 22]},
     "personar": {
         "atle": {"namn": "Atle", "scoreNamn": "Rygg", "scoreTekst": "Rygg 1–5: 1 = ingen plage, 3 = kjennbar men styrbar, 5 = skarp/utstrålande.",
                  "malVekt": fg.get("Mål", {}).get("atle"), "startVekt": fg.get("Startvekt v1 (21.09.2026)", {}).get("atle"),
