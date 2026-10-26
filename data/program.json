@@ -1247,9 +1247,9 @@
    "doeme": null
   },
   {
-   "steg": "Atle: taket er 24 kg",
-   "regel": "Manualane går til 24 kg per hand. Når du når 24 kg på ei øving (mest aktuelt for seteløft, bæring, goblet-knebøy og roing), aukar du ikkje kg meir. Byt heller til fleire repetisjonar, saktare tempo (3 s ned), pause (1–2 s) i den tyngste posisjonen, eller eittbeins/eittarms variant (t.d. eittbeins seteløft med manual, bakoverutfall i staden for knebøy).",
-   "doeme": "Goblet-knebøy 3 × 12 med 24 kg → 3 × 8 med 3 s ned og 1 s pause nede."
+   "steg": "Atle: taket er 22 kg",
+   "regel": "Manualane går til 22 kg per hand. Når du når 22 kg på ei øving (mest aktuelt for seteløft, bæring, goblet-knebøy og roing), aukar du ikkje kg meir. Byt heller til fleire repetisjonar, saktare tempo (3 s ned), pause (1–2 s) i den tyngste posisjonen, eller eittbeins/eittarms variant (t.d. eittbeins seteløft med manual, bakoverutfall i staden for knebøy).",
+   "doeme": "Goblet-knebøy 3 × 12 med 22 kg → 3 × 8 med 3 s ned og 1 s pause nede."
   },
   {
    "steg": "Audny: lettaste er 3 kg",
@@ -1532,7 +1532,7 @@
   {
    "id": "seteloft_eittbein",
    "namn": "Eittbeins seteløft",
-   "gjeld": "Atle (lett-variant / ved 24 kg)",
+   "gjeld": "Atle (lett-variant / ved 22 kg)",
    "teknikk": "Eitt bein i golvet, det andre strekt eller bøygd i lufta. Hofta i vater heile vegen.",
    "feil": "Hofta sig på eine sida, svai.",
    "videoUrl": "https://www.youtube.com/watch?v=fUOB9VcyvYo",
