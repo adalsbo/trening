@@ -35,7 +35,7 @@
   function lagre() { merkeSynkPending(); lagreLokalt(); planSynk(); }
 
   // ---------- synk via privat GitHub-repo ----------
-  // Nykelen ligg BERRE i eigen localStorage-nykel – aldri i S, logg.json eller tryggleikskopien.
+  // Nykelen ligg BERRE i eigen localStorage-nykel – aldri i S, logg.json eller sikkerhetskopien.
   const GH = { api: "https://api.github.com", owner: "adalsbo", repo: "trening-logg", path: "logg.json" };
   const TOKEN_NYKEL = "treningsapp-gh-token";
   const hentToken = () => { try { return localStorage.getItem(TOKEN_NYKEL) || ""; } catch (e) { return ""; } };
@@ -559,7 +559,7 @@
     const vekt = S.vekt.filter((v) => v.person === pid).sort((a, b) => (a.dato > b.dato ? 1 : -1));
     const sistDato = okter.reduce((m, o) => (o.dato > m ? o.dato : m), "");
     const visSynk = !hentToken() && okter.length && (sistDato === idag() || !S.sistTryggleikskopi);
-    let h = (visSynk ? `<div class="kort varsel"><h3>Send loggen til den andre eininga</h3><p>Appen på iPhone og iPad har kvar si logg. Del tryggleikskopien no, og hent ho inn på den andre eininga under Meir.</p><button class="knapp stor full" id="synkSend">Send tryggleikskopi</button></div>` : "") + `<h2>Framgang for ${esc(p.namn)}</h2>
+    let h = (visSynk ? `<div class="kort varsel"><h3>Send loggen til den andre eininga</h3><p>Appen på iPhone og iPad har kvar si logg. Del sikkerhetskopien no, og hent ho inn på den andre eininga under Meir.</p><button class="knapp stor full" id="synkSend">Send sikkerhetskopi</button></div>` : "") + `<h2>Framgang for ${esc(p.namn)}</h2>
       <div class="to-kol"><div class="kort"><h3>Økter i blokka</h3><p style="font-size:2rem;margin:0"><strong>${iBlokk.length}</strong> av 12</p><p class="liten">19.10–15.11.2026 · totalt ${okter.length} fullførte</p></div>
       <div class="kort"><h3>Kroppsvekt</h3>${vekt.length ? `<p style="font-size:2rem;margin:0"><strong>${kgTekst(vekt[vekt.length - 1].kg)}</strong> kg</p><p class="liten">${pid === "atle" ? `Mål ${kgTekst(p.malVekt)} kg · ${vekt.length > 1 ? `endring ${kgTekst(Math.round((vekt[vekt.length - 1].kg - vekt[0].kg) * 10) / 10)} kg` : ""}` : `Hald over ${p.minVekt} kg`}</p>` : `<p class="liten">Ingen vekt lagra enno.</p>`}</div></div>
       <div class="kort"><h3>Vektutvikling</h3>${linjegraf(vekt.map((v) => ({ x: v.dato, y: v.kg })), { mal: pid === "atle" ? p.malVekt : p.minVekt, tittel: "Vektutvikling" })}</div>`;
@@ -639,10 +639,10 @@
   }
   async function delTryggleikskopi() {
     const blob = new Blob([JSON.stringify({ app: "treningsapp", laga: new Date().toISOString(), data: S }, null, 1)], { type: "application/json" });
-    const r = await delFil(blob, `Trening_tryggleikskopi_${idag()}.json`, "Tryggleikskopi");
+    const r = await delFil(blob, `Trening_sikkerhetskopi_${idag()}.json`, "Sikkerhetskopi");
     if (r === "avbrote") return;
     S.sistTryggleikskopi = idag(); lagre();
-    toast("Opne appen på den andre eininga → Meir → Hent inn tryggleikskopi");
+    toast("Opne appen på den andre eininga → Meir → Hent inn sikkerhetskopi");
   }
   const STEG = `<ol class="steg"><li>Trykk knappen under</li><li>Vel «Lagre i Filer»</li><li>OneDrive → DOK → Helse → Trening</li></ol>`;
   function eksportOk(r) { if (r === "avbrote") return; S.sistEksport = idag(); lagre(); toast("Hugs: lagre i OneDrive → DOK/Helse/Trening"); }
@@ -685,10 +685,10 @@
         <button class="knapp stor full" id="lagreToken">Lagre nykel</button>
         ${hentToken() ? `<button class="knapp stor full" id="synkNo" style="margin-top:.5rem">Synk no</button><div class="knapprad"><button class="knapp sekundar" id="fjernToken">Fjern nykel</button></div>` : ""}
         <p class="liten">Når nykelen er lagra, synkar appen sjølv: ved opning, når ei økt er ferdig, og litt etter endringar.</p></div>
-      <div class="kort"><h3>Tryggleikskopi (iPhone ⇄ iPad)</h3><p>${hentToken() ? "Synk går automatisk via GitHub. Tryggleikskopi er ekstra backup." : "Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:"}</p>
-        <ol class="steg"><li>På eininga du nettopp treningslogga: trykk «Send tryggleikskopi» (AirDrop eller Lagre i Filer)</li><li>På den andre eininga: Meir → Hent inn tryggleikskopi → vel fila</li><li>Økter vert slått saman; like økter vert ikkje dobla</li></ol>
-        <button class="knapp stor full" id="backup">Send tryggleikskopi</button>
-        <label class="knapp stor full sekundar" for="importFil" style="margin-top:.5rem">Hent inn tryggleikskopi</label>${S.sistTryggleikskopi ? `<p class="liten">Sist sendt frå denne eininga: ${tilNorsk(S.sistTryggleikskopi)}</p>` : ""}
+      <div class="kort"><h3>Sikkerhetskopi (iPhone ⇄ iPad)</h3><p>${hentToken() ? "Synk går automatisk via GitHub. Sikkerhetskopi er ekstra backup." : "Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:"}</p>
+        <ol class="steg"><li>På eininga du nettopp treningslogga: trykk «Send sikkerhetskopi» (AirDrop eller Lagre i Filer)</li><li>På den andre eininga: Meir → Hent inn sikkerhetskopi → vel fila</li><li>Økter vert slått saman; like økter vert ikkje dobla</li></ol>
+        <button class="knapp stor full" id="backup">Send sikkerhetskopi</button>
+        <label class="knapp stor full sekundar" for="importFil" style="margin-top:.5rem">Hent inn sikkerhetskopi</label>${S.sistTryggleikskopi ? `<p class="liten">Sist sendt frå denne eininga: ${tilNorsk(S.sistTryggleikskopi)}</p>` : ""}
         <input type="file" id="importFil" accept="application/json,.json" class="skjult">
         <p class="liten">Ved innhenting blir økter og vekt slått saman. Like økter blir ikkje dobla.</p></div>
       <div class="kort"><h3>Steg på manualane</h3><p>Kor mykje + og − endrar kg (manualane går frå 3 til 24 kg).</p>
@@ -738,7 +738,7 @@
         S = mergeState(S, d); merkeSynkPending(); lagreLokalt();
         toast(`Henta inn ${S.okter.length - fO} nye økter og ${S.vekt.length - fV} vektmålingar`);
         synk();
-      } catch (err) { toast("Fila kunne ikkje lesast. Vel ein tryggleikskopi frå appen."); }
+      } catch (err) { toast("Fila kunne ikkje lesast. Vel ein sikkerhetskopi frå appen."); }
       e.target.value = "";
     });
   }
