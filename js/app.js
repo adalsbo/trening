@@ -43,6 +43,19 @@
   const tidTekst = (isoTid) => { const d = new Date(isoTid); return `${tilNorsk(isoDato(d))} kl. ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
   const nyast = (...t) => t.filter(Boolean).sort().pop() || null;
   const oktTid = (o) => o.slutt || o.start || "";
+  const oktSettTal = (o) => {
+    let n = 0;
+    for (const ov of Object.values(o.ovingar || {})) for (const s of (ov.sett || [])) if (s.ferdig) n++;
+    return n;
+  };
+  /** Vel rikaste versjon: fullført > uferdig, elles flest sett, elles nyast tid. */
+  function betreOkt(a, b) {
+    if (!a) return b; if (!b) return a;
+    if (!!a.ferdig !== !!b.ferdig) return a.ferdig ? a : b;
+    const sa = oktSettTal(a), sb = oktSettTal(b);
+    if (sa !== sb) return sa > sb ? a : b;
+    return oktTid(a) >= oktTid(b) ? a : b;
+  }
   function mergeState(lokal, fjern) {
     const ut = Object.assign({}, lokal, { versjon: 1 });
     if (!fjern || !Array.isArray(fjern.okter)) return ut;
@@ -50,8 +63,24 @@
     const okter = (lokal.okter || []).slice();
     for (const o of fjern.okter) {
       const i = okter.findIndex((x) => x.id === o.id);
-      if (i < 0) okter.push(o); else if (oktTid(o) > oktTid(okter[i])) okter[i] = o;
+      if (i < 0) okter.push(o); else okter[i] = betreOkt(okter[i], o);
     }
+    // Same person+dato+okt med ulike id: behald den rikaste, merk den andre som sletta
+    const nykel = (o) => `${o.person}|${o.dato}|${o.okt}`;
+    const beste = new Map();
+    for (const o of okter) {
+      if (sletta.has(o.id)) continue;
+      const k = nykel(o);
+      const tidl = beste.get(k);
+      if (!tidl) beste.set(k, o);
+      else {
+        const vinn = betreOkt(tidl, o);
+        const tap = vinn === tidl ? o : tidl;
+        beste.set(k, vinn);
+        if (tap && tap.id !== vinn.id) sletta.add(tap.id);
+      }
+    }
+    okter.length = 0; for (const o of beste.values()) okter.push(o);
     const vekt = (lokal.vekt || []).slice();
     for (const v of fjern.vekt || []) if (!vekt.some((x) => x.person === v.person && x.dato === v.dato)) vekt.push(v);
     ut.okter = okter.filter((o) => !sletta.has(o.id));
@@ -494,12 +523,13 @@
     });
     $("#oktKommentar").addEventListener("change", (e) => { okt.kommentar = e.target.value; lagre(); });
     const f = $("#fullfor");
-    if (f) f.addEventListener("click", () => {
+    if (f) f.addEventListener("click", async () => {
       const ingen = !Object.values(okt.ovingar).some((d) => d.sett.some((s) => s.ferdig));
       if (ingen && !confirm("Ingen sett er haka av. Vil du likevel fullføre økta?")) return;
       okt.ferdig = true; okt.slutt = new Date().toISOString(); merkeSynkPending(); lagreLokalt(); stoppTimar();
-      toast("Økta er lagra. Bra jobba!"); location.hash = "#/framgang";
-      synk();
+      toast("Økta er lagra. Bra jobba!");
+      try { await synk({ stille: true }); } catch (e) {}
+      location.hash = "#/framgang";
     });
     $("#slettOkt").addEventListener("click", () => {
       if (!confirm("Vil du slette heile økta? Dette kan ikkje angrast.")) return;
