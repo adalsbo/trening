@@ -706,6 +706,8 @@
     const pid = S.person, p = person();
     app.innerHTML = `<h2>Meir</h2>
       <div class="kort"><h3>Person</h3><div class="knapprad">${Object.entries(P.personar).map(([id, q]) => `<button class="knapp ${id === pid ? "" : "sekundar"}" data-person="${id}">${esc(q.namn)}${id === pid ? " ✓" : ""}</button>`).join("")}</div></div>
+      <div class="kort"><h3>Trening per kroppsdel</h3><p>Sjå vekentleg volum per muskelgruppe for deg og Audny.</p>
+        <a class="knapp stor full" href="https://cursor.com/canvas/store-f57473e8-ded4-48a6-8250-a522b0cdf946/28320b89-ea0d-4697-95c8-935123658d55" target="_blank" rel="noopener">Opne oversikt</a></div>
       <div class="kort"><h3>Legg inn tidlegare økt</h3><p class="liten">For ei økt de gløymde å registrere.</p>
         <label class="felt" for="tidDato">Dato</label><input id="tidDato" type="date" max="${idag()}" value="${tidlegDefault(pid)}">
         <label class="felt" for="tidOkt">Økt</label><select id="tidOkt"><option>A</option><option>B</option></select>
