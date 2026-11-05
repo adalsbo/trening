@@ -805,7 +805,18 @@
     } catch (e) { app.innerHTML = `<div class="kort varsel"><p>Klarte ikkje å laste programmet. Opne appen på nytt med nett.</p></div>`; return; }
     rute();
     if (hentToken()) setTimeout(() => synk({ stille: true }), 300);
-    if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      let lastaOm = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (lastaOm) return;
+        lastaOm = true;
+        location.reload();
+      });
+      navigator.serviceWorker.register("sw.js").then((reg) => {
+        try { reg.update(); } catch (e) {}
+        setInterval(() => { try { reg.update(); } catch (e) {} }, 60 * 60 * 1000);
+      }).catch(() => {});
+    }
   }
   window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S, mergeState, synk };
   init();
