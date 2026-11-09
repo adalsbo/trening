@@ -92,58 +92,118 @@
   const delt = (d) => ({ versjon: 1, okter: d.okter || [], vekt: d.vekt || [], sletta: d.sletta || [], sistSynk: d.sistSynk || null });
   const likDelt = (a, b) => { const k = (d) => JSON.stringify({ o: d.okter.slice().sort((x, y) => (x.id > y.id ? 1 : -1)), v: d.vekt.slice().sort((x, y) => (x.person + x.dato > y.person + y.dato ? 1 : -1)), s: d.sletta.slice().sort() }); return k(a) === k(b); };
   class SynkFeil extends Error { constructor(kode) { super("synk " + kode); this.kode = kode; } }
-  async function ghKall(metode, body) {
-    let r;
-    try {
-      r = await fetch(`${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`, {
-        method: metode, cache: "no-store", keepalive: true,
-        headers: { Authorization: "Bearer " + hentToken(), Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-    } catch (e) { throw new SynkFeil("nett"); }
-    if (!r.ok) throw new SynkFeil(r.status);
-    return r.json();
+  // Keepalive har eit kø-tak på 64 KB. Over taket, eller når køen alt er full, avviser
+  // nettlesaren fetch med TypeError – også når telefonen er på nett. Bruk keepalive berre
+  // når sida blir skjult, og berre for små kroppar. Vanleg synk (opning, «Synk no») går utan.
+  const KEEPALIVE_GRENS = 48 * 1024;
+  let synkFeilKode = null;
+  const tokenTilHeader = () => hentToken().trim();
+  function ghInit(metode, body, keepalive) {
+    const raw = body ? JSON.stringify(body) : "";
+    const brukKeepalive = !!keepalive && raw.length <= KEEPALIVE_GRENS;
+    const headers = { Authorization: "Bearer " + tokenTilHeader(), Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    if (body) headers["Content-Type"] = "application/json";
+    const init = { method: metode, cache: "no-store", headers };
+    if (brukKeepalive) init.keepalive = true;
+    if (body) init.body = raw;
+    return init;
   }
-  async function hentFjern() {
-    const j = await ghKall("GET");
+  function transportKode(e) {
+    const m = String((e && e.message) || "");
+    const namn = e && e.name;
+    if (namn === "AbortError" || /aborted|avbrot/i.test(m)) return "avbrote";
+    if (/keepalive|queued data|64\s?k/i.test(m)) return "keepalive";
+    if (typeof document !== "undefined" && document.visibilityState === "hidden" && (namn === "TypeError" || namn === "AbortError")) return "avbrote";
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return "nett";
+    return "kontakt";
+  }
+  function erTransport(k) { return k === "nett" || k === "kontakt" || k === "keepalive" || k === "avbrote"; }
+  function kanAutoRetry() {
+    return erTransport(synkFeilKode) || synkFeilKode === 408 || synkFeilKode === 409 || synkFeilKode === 422 || synkFeilKode === 425 || synkFeilKode === 429 || (typeof synkFeilKode === "number" && synkFeilKode >= 500);
+  }
+  function synkFeilTekst(k) {
+    if (k === "nett") return { status: "Nettlesaren melder ikkje nett – prøver seinare.", toast: "Nettlesaren melder ikkje nett – synkar seinare", alltid: false };
+    if (k === "keepalive") return { status: "Nettlesaren stoppa synken (keepalive-kø). Prøver seinare utan det.", toast: "Synken vart stoppa av nettlesaren – prøver igjen", alltid: false };
+    if (k === "avbrote") return { status: "Synken vart avbroten. Prøver seinare.", toast: "Synken vart avbroten – prøver igjen", alltid: false };
+    if (k === "kontakt") return { status: "På nett, men GitHub svarte ikkje. Prøver seinare.", toast: "Fekk ikkje kontakt med GitHub – prøver igjen", alltid: false };
+    if (k === 401) return { status: "Nykelen vart avvist (401). Lag ein ny token og lagre han her. Loggen vert liggjande.", toast: "Nykelen vart avvist. Lag ein ny GitHub-token og lagre han her.", alltid: true };
+    if (k === 403) return { status: "GitHub nekta tilgang (403). Token må kunna lesa og skriva repoet trening-logg.", toast: "GitHub nekta tilgang. Sjekk at token kan lesa og skriva trening-logg.", alltid: true };
+    if (k === 404) return { status: "Finn ikkje trening-logg (404). Sjekk at token har tilgang til repoet.", toast: "Finn ikkje trening-logg. Sjekk at token har tilgang til repoet.", alltid: true };
+    if (k === 429) return { status: "GitHub bad oss venta. Prøver seinare.", toast: "GitHub avgrensar no – prøver seinare", alltid: false };
+    if (typeof k === "number") return { status: "Synk feila (HTTP " + k + "). Prøver seinare.", toast: "Synk feila – prøver seinare", alltid: false };
+    return { status: "Synk feila – prøver seinare.", toast: "Synk feila – prøver seinare", alltid: false };
+  }
+  async function ghSend(init) {
+    let r;
+    try { r = await fetch(`${GH.api}/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`, init); }
+    catch (e) { const feil = new SynkFeil(transportKode(e)); feil.arsak = e; throw feil; }
+    if (!r.ok) throw new SynkFeil(r.status);
+    try { return await r.json(); }
+    catch (e) { throw new SynkFeil("kontakt"); }
+  }
+  async function ghKall(metode, body, opts) {
+    const keepalive = !!(opts && opts.keepalive);
+    const init = ghInit(metode, body, keepalive);
+    try { return await ghSend(init); }
+    catch (e) {
+      if (!(e instanceof SynkFeil) || !erTransport(e.kode) || !init.keepalive) throw e;
+      return ghSend(ghInit(metode, body, false));
+    }
+  }
+  async function hentFjern(opts) {
+    const j = await ghKall("GET", null, opts);
     let data = null;
     try { data = JSON.parse(decodeURIComponent(escape(atob(String(j.content || "").replace(/\s/g, ""))))); } catch (e) { data = null; }
     return { data: data && Array.isArray(data.okter) ? data : null, sha: j.sha };
   }
-  async function skrivFjern(data, sha) {
+  async function skrivFjern(data, sha, opts) {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 1))));
-    return ghKall("PUT", { message: "Synk frå app", content, sha, branch: "main" });
+    return ghKall("PUT", { message: "Synk frå app", content, sha, branch: "main" }, opts);
   }
   // Hent → slå saman → skriv berre viss noko er nytt. Prøver éin gong til ved 409/422 (nokon skreiv i mellomtida).
-  async function synkEin(forsok) {
-    const { data, sha } = await hentFjern();
+  // Lagrar ikkje ved feil, så lokale økter, vente-flagg og nykel blir verande.
+  async function synkEin(forsok, opts) {
+    const { data, sha } = await hentFjern(opts);
     const for_ = JSON.stringify({ o: S.okter, v: S.vekt });
     S = mergeState(S, data);
     const endraLokalt = JSON.stringify({ o: S.okter, v: S.vekt }) !== for_;
     const no = new Date().toISOString();
     if (!data || !likDelt(delt(S), delt(data))) {
-      try { await skrivFjern(delt(Object.assign({}, S, { sistSynk: no })), sha); }
-      catch (e) { if (forsok < 1 && (e.kode === 409 || e.kode === 422)) return (await synkEin(forsok + 1)) || endraLokalt; throw e; }
+      try { await skrivFjern(delt(Object.assign({}, S, { sistSynk: no })), sha, opts); }
+      catch (e) { if (forsok < 1 && (e.kode === 409 || e.kode === 422)) return (await synkEin(forsok + 1, opts)) || endraLokalt; throw e; }
     }
     S.sistSynk = no; S.synkPending = false; lagreLokalt();
     return endraLokalt;
   }
-  async function synk({ manuell = false, stille = false } = {}) {
+  function ventLitt(ms) {
+    const n = typeof window.__synkVentMs === "number" ? window.__synkVentMs : ms;
+    return new Promise((r) => setTimeout(r, n));
+  }
+  async function synk({ manuell = false, stille = false, vedLukking = false } = {}) {
     clearTimeout(synkTimar); synkTimar = null;
     if (!hentToken()) return false;
     while (synkPaagar) { await synkPaagar.catch(() => {}); }
     synkPaagar = (async () => {
+      const opts = { keepalive: !!vedLukking };
       try {
-        const endra = await synkEin(0);
-        synkStatus = "";
+        let endra;
+        try { endra = await synkEin(0, opts); }
+        catch (e) {
+          if (vedLukking || !erTransport(e && e.kode)) throw e;
+          await ventLitt(e.kode === "nett" ? 4000 : 800);
+          endra = await synkEin(0, { keepalive: false });
+        }
+        synkStatus = ""; synkFeilKode = null;
         if (endra) bevarScroll(rute); else if ((location.hash || "").startsWith("#/meir")) visMeirStatus();
         if (manuell) toast(endra ? "Synka – nye data henta" : "Synka");
         return endra;
       } catch (e) {
         const k = e && e.kode;
-        if (k === 401 || k === 403) { synkStatus = "Nykelen verkar ikkje."; toast("Nykelen verkar ikkje. Sjekk token under Meir."); }
-        else if (k === 404) { synkStatus = "Finn ikkje repoet trening-logg."; toast("Finn ikkje trening-logg. Sjekk at nykelen har tilgang til repoet."); }
-        else { synkStatus = k === "nett" ? "Ikkje nett – prøver seinare." : "Synk feila – prøver seinare."; if (!stille) toast(k === "nett" ? "Ikkje nett – synkar seinare" : "Synk feila – prøver seinare"); }
+        synkFeilKode = k;
+        const tekst = synkFeilTekst(k);
+        synkStatus = tekst.status;
+        if (!stille || tekst.alltid) toast(tekst.toast);
+        if (kanAutoRetry()) planSynk(20000);
         if ((location.hash || "").startsWith("#/meir")) visMeirStatus();
         return false;
       }
@@ -152,22 +212,37 @@
   }
   function planSynk(ms = 3000) {
     if (!hentToken()) return;
-    clearTimeout(synkTimar); synkTimar = setTimeout(() => synk({ stille: true }), ms);
+    const n = typeof window.__synkPlanMs === "number" ? window.__synkPlanMs : ms;
+    clearTimeout(synkTimar); synkTimar = setTimeout(() => synk({ stille: true }), n);
   }
-  function synkOmTrengst() {
-    if (!hentToken()) return;
-    if (synkTimar || S.synkPending) synk({ stille: true });
+  let lukkeSynk = false;
+  function børAutoSynk() {
+    if (!hentToken() || !S) return false;
+    if (synkFeilKode != null && !kanAutoRetry()) return false;
+    return !!(synkTimar || S.synkPending || kanAutoRetry());
+  }
+  function synkOmTrengst(vedLukking) {
+    if (!børAutoSynk()) return;
+    if (vedLukking) {
+      if (lukkeSynk) return;
+      lukkeSynk = true;
+      synk({ stille: true, vedLukking: true }).finally(() => { lukkeSynk = false; });
+      return;
+    }
+    synk({ stille: true });
   }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") synkOmTrengst();
-    else if (S && S.synkPending) synk({ stille: true });
+    if (document.visibilityState === "hidden") synkOmTrengst(true);
+    else synkOmTrengst(false);
   });
-  window.addEventListener("pagehide", () => synkOmTrengst());
+  window.addEventListener("pagehide", () => synkOmTrengst(true));
+  window.addEventListener("online", () => synkOmTrengst(false));
   function visMeirStatus() {
     const el = $("#synkStatus"); if (!el) return;
     const t = hentToken();
     const statusTekst = synkStatus ? esc(synkStatus) : S.synkPending ? "Ventar på synk…" : S.sistSynk ? "Synka" : "Nykel lagra – ikkje synka enno";
-    el.innerHTML = !t ? "Status: <strong>Ikkje sett opp</strong>" : `Status: <strong>${statusTekst}</strong>${S.sistSynk ? `<br><span class="liten">Sist synka: ${tidTekst(S.sistSynk)}</span>` : ""}`;
+    const nettLinje = synkStatus ? `<br><span class="liten">${navigator.onLine === false ? "Nettlesaren melder ikkje nett." : "Nettlesaren melder på nett."}</span>` : "";
+    el.innerHTML = !t ? "Status: <strong>Ikkje sett opp</strong>" : `Status: <strong>${statusTekst}</strong>${S.sistSynk ? `<br><span class="liten">Sist synka: ${tidTekst(S.sistSynk)}</span>` : ""}${nettLinje}`;
   }
   function toast(t) {
     const el = $("#toast"); el.textContent = t; el.hidden = false;
@@ -720,7 +795,7 @@
         <label class="felt" for="ghToken">GitHub-nykel (token)</label><input id="ghToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${hentToken() ? "Nykel er lagra" : "github_pat_…"}">
         <button class="knapp stor full" id="lagreToken">Lagre nykel</button>
         ${hentToken() ? `<button class="knapp stor full" id="synkNo" style="margin-top:.5rem">Synk no</button><div class="knapprad"><button class="knapp sekundar" id="fjernToken">Fjern nykel</button></div>` : ""}
-        <p class="liten">Når nykelen er lagra, synkar appen sjølv: ved opning, når ei økt er ferdig, og litt etter endringar.</p></div>
+        <p class="liten">Når nykelen er lagra, synkar appen sjølv: ved opning, når ei økt er ferdig, og litt etter endringar. Viss synken feilar, blir loggen og nykelen liggjande på eininga. Mellombels feil blir prøvd på nytt.</p></div>
       <div class="kort"><h3>Sikkerhetskopi (iPhone ⇄ iPad)</h3><p>${hentToken() ? "Synk går automatisk via GitHub. Sikkerhetskopi er ekstra backup." : "Appen på iPhone og iPad har kvar si logg. Slik flyttar de loggen:"}</p>
         <ol class="steg"><li>På eininga du nettopp treningslogga: trykk «Send sikkerhetskopi» (AirDrop eller Lagre i Filer)</li><li>På den andre eininga: Meir → Hent inn sikkerhetskopi → vel fila</li><li>Økter vert slått saman; like økter vert ikkje dobla</li></ol>
         <button class="knapp stor full" id="backup">Send sikkerhetskopi</button>
@@ -805,7 +880,7 @@
     } catch (e) { app.innerHTML = `<div class="kort varsel"><p>Klarte ikkje å laste programmet. Opne appen på nytt med nett.</p></div>`; return; }
     rute();
     if (hentToken()) setTimeout(() => synk({ stille: true }), 300);
-    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    if ("serviceWorker" in navigator && location.protocol !== "file:" && !window.__ingenTenesteArbeidar) {
       let lastaOm = false;
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (lastaOm) return;
@@ -818,6 +893,6 @@
       }).catch(() => {});
     }
   }
-  window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S, mergeState, synk };
+  window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S, mergeState, synk, synkFeilTekst, transportKode, ghInit };
   init();
 })();
