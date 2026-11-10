@@ -18,8 +18,9 @@ p{margin:.4rem 0}
 .topbar{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--brun);color:#fff;
   padding:env(safe-area-inset-top) 12px 0;height:calc(var(--top-h) + env(safe-area-inset-top));
   display:flex;align-items:center;justify-content:space-between;gap:8px}
-.topbar h1{font-size:1.25rem;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.person-chip{min-height:48px;min-width:110px;border-radius:24px;border:2px solid #fff;background:transparent;color:#fff;
+.topbar h1{font-size:1.25rem;margin:0;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-versjon{flex:none;margin-left:auto;font-size:.75rem;font-weight:600;line-height:1;color:#F6EDE4;white-space:nowrap}
+.person-chip{flex:none;min-height:48px;min-width:110px;border-radius:24px;border:2px solid #fff;background:transparent;color:#fff;
   font-size:1rem;font-weight:700;padding:0 16px}
 main{max-width:860px;margin:0 auto;padding:12px 14px;outline:none}
 .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#fff;border-top:2px solid var(--linje);
@@ -34,6 +35,7 @@ main{max-width:860px;margin:0 auto;padding:12px 14px;outline:none}
 .kort.gul{background:var(--gul);border-color:#C9A227}
 .kort.gron{background:var(--gron-lys);border-color:var(--gron)}
 .liten{font-size:.85rem;color:var(--svak)}
+.versjon-botn{text-align:center;margin:22px 0 4px}
 .knapp{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 20px;
   border-radius:14px;border:2px solid var(--brun);background:var(--brun);color:#fff;font-size:1.05rem;font-weight:700;
   text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent}

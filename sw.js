@@ -1,6 +1,6 @@
-/* Service worker: alt blir lagra lokalt så appen verkar utan nett. Auk VERSJON ved endringar. */
-const VERSJON = "treningsapp-v14";
-const FILER = ["./", "index.html", "css/app.css", "js/app.js", "data/program.json", "manifest.webmanifest",
+/* Service worker: alt blir lagra lokalt så appen verkar utan nett. Versjonsnamnet ligg i js/versjon.js. */
+importScripts("js/versjon.js");
+const FILER = ["./", "index.html", "css/app.css", "js/app.js", "js/versjon.js", "data/program.json", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "icons/icon-maskable-512.png", "vendor/xlsx.mini.min.js"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(VERSJON).then((c) => c.addAll(FILER)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {
@@ -16,6 +16,7 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
   const nettForst = url.pathname.endsWith("/data/program.json")
     || url.pathname.endsWith("/js/app.js")
+    || url.pathname.endsWith("/js/versjon.js")
     || url.pathname.endsWith("/css/app.css")
     || url.pathname.endsWith("/sw.js");
   if (nettForst) {

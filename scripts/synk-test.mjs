@@ -66,6 +66,7 @@ window.fetch = async function (input, init) {
   return new Response(JSON.stringify({ content: { sha: "sha-etter" } }), { status: 200, headers: { "Content-Type": "application/json" } });
 };
 </script>
+<script src="js/versjon.js"></script>
 <script src="js/app.js"></script>
 <script>
 const TOKEN_KEY = "treningsapp-gh-token";

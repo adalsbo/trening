@@ -20,7 +20,7 @@ Programdataa (`data/program.json`) blir laga frå arbeidsboka i Excel – ikkje 
    ```
    (Krev Python 3 med `openpyxl`. `--offentleg` tek bort startvekt og brukar ei privat regelfil,
    `/workspace/build/offentleg_erstatt.json` på boksen, som skriv om helseopplysningar. Den fila skal ikkje inn i repoet.)
-3. Ved endringar i andre filer enn `data/program.json`: auk `VERSJON` i `sw.js` (t.d. `treningsapp-v6`), elles kan appen halde fram med gamle filer.
+3. Ved endringar i andre filer enn `data/program.json`: auk `VERSJON` i `js/versjon.js` (t.d. `treningsapp-v16`). Det namnet er cache-namnet i `sw.js` og talet som visest i appen (`v16` i toppfeltet, «Versjon 16» under Meir). Elles kan appen halde fram med gamle filer.
 4. Last opp:
    ```
    git add -A && git commit -m "Oppdatert program" && git push
@@ -28,7 +28,7 @@ Programdataa (`data/program.json`) blir laga frå arbeidsboka i Excel – ikkje 
 5. GitHub Pages byggjer på nytt på 1–2 minutt. Lukk og opne appen att for å få den nye versjonen.
 
 ## Innhald
-- `index.html`, `css/`, `js/app.js` – sjølve appen (rein HTML/CSS/JS, ingen byggjesteg)
+- `index.html`, `css/`, `js/app.js`, `js/versjon.js` – sjølve appen (rein HTML/CSS/JS, ingen byggjesteg). Versjonsnamnet ligg berre i `js/versjon.js`.
 - `data/program.json` – program, kalender, progresjonsreglar og øvingsguide
 - `sw.js` – service worker, gjer at appen verkar utan nett
 - `vendor/xlsx.mini.min.js` – SheetJS for Excel-eksport (lisens i `vendor/SHEETJS-LICENSE.txt`)

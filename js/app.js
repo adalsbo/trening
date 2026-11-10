@@ -406,6 +406,17 @@
   const aktivOkt = (pid) => S.okter.find((o) => o.person === pid && !o.ferdig);
 
   // ---------- visingar ----------
+  function versjonsNr() {
+    const raw = typeof VERSJON === "string" ? VERSJON : "";
+    const m = raw.match(/-v(\d+)$/);
+    return m ? m[1] : "";
+  }
+  function visVersjon() {
+    const el = $("#appVersjon"), n = versjonsNr();
+    if (!el || !n) return;
+    el.textContent = "v" + n;
+    el.setAttribute("aria-label", "Versjon " + n);
+  }
   function setTittel(t) { $("#topTitle").textContent = t; document.title = t + " – Trening"; }
   function markerTab(t) { document.querySelectorAll(".tabbar a").forEach((a) => a.classList.toggle("aktiv", a.dataset.tab === t)); }
   function oppdaterPersonknapp() { $("#personBtn").textContent = S.person ? P.personar[S.person].namn + " ▾" : "Vel person"; }
@@ -808,7 +819,8 @@
       <details class="kort"><summary>Reglar</summary>${P.start.reglar.map((r) => `<p><strong>${esc(r.tittel)}</strong> ${esc(r.tekst)}</p>`).join("")}</details>
       <details class="kort"><summary>Utstyr</summary>${P.start.utstyr.map((r) => `<p><strong>${esc(r.utstyr)}:</strong> ${esc(r.tekst)}</p>`).join("")}</details>
       <div class="kort varsel"><p>${esc(P.start.atvaring || "")}</p></div>
-      <p class="liten">Programdata: ${esc(P.kjelde)}, laga ${esc(P.laga)}.</p>`;
+      <p class="liten">Programdata: ${esc(P.kjelde)}, laga ${esc(P.laga)}.</p>
+      ${versjonsNr() ? `<p class="liten versjon-botn">Versjon ${esc(versjonsNr())}</p>` : ""}`;
     app.querySelectorAll("[data-person]").forEach((b) => b.addEventListener("click", () => { S.person = b.dataset.person; lagre(); oppdaterPersonknapp(); visMeir(); }));
     $("#ekspCsv").addEventListener("click", async () => {
       const r = await delFil(new Blob([csvFor(pid)], { type: "text/csv" }), `Logg_${p.namn}_${idag()}.csv`, `Treningslogg ${p.namn}`);
@@ -894,5 +906,6 @@
     }
   }
   window.__treningsapp = { progresjon: (pid, exId, oktId) => progresjon(pid, P.personar[pid].ovingar.find((e) => e.id === exId), S.okter.find((o) => o.id === oktId)), csvFor, state: () => S, mergeState, synk, synkFeilTekst, transportKode, ghInit };
+  visVersjon();
   init();
 })();
