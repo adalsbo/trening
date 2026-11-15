@@ -256,11 +256,14 @@
   function nesteStyrkedag(iso) { return P.kalender.find((d) => d.dato >= iso && d.type === "Styrke") || null; }
   function dagensPlan(iso) {
     const { start, slutt } = P.blokk;
-    if (iso < start) { const n = nesteStyrkedag(start); return { fase: "for", neste: n }; }
     if (iso > slutt) return { fase: "etter" };
     const dag = kalenderDag(iso);
+    // Kalenderen har òg førre blokk, så tidlegare datoar (og historikk) framleis har rett dag.
     if (dag && dag.type === "Styrke") return { fase: "styrke", dag };
-    return { fase: "annan", dag, neste: nesteStyrkedag(iso) };
+    if (dag) return { fase: "annan", dag, neste: nesteStyrkedag(iso) };
+    const n = nesteStyrkedag(iso);
+    if (iso < start) return { fase: "for", neste: n };
+    return { fase: "annan", dag, neste: n };
   }
   function sisteOktFor(pid) { return S.okter.filter((o) => o.person === pid).sort((a, b) => (a.dato + a.start < b.dato + b.start ? 1 : -1))[0]; }
 
@@ -347,7 +350,7 @@
         } else if (hald) {
           ut.push({ type: "hald", tekst: `Klar for ${kgTekst(nesteKg(kg))} kg når dagen er god – men ikkje i dag.` });
         } else if (!atle && ex.gruppe === "Press" && !trekkKlar(pid, okt)) {
-          ut.push({ type: "hald", tekst: "Trekk før press: auk roing og omvendt flyes først. Hald same kg på pressøvinga til trekkøvingane er auka." });
+          ut.push({ type: "hald", tekst: "Trekk før press: auk roing og Y-løft først. Hald same kg på pressøvinga til trekkøvingane er auka." });
         } else {
           const n = nesteKg(kg), r = ex.unit === "m" ? ex.repMax : ex.repMin;
           ut.push({ type: "auke", tekst: `Reint øvst i intervallet to økter på rad! Prøv ${kgTekst(n)} kg${ex.unit === "rep" ? ` og start på ${r} rep` : ""}.`, kg: n, rep: r });
@@ -366,7 +369,7 @@
     return ut;
   }
   function trekkKlar(pid, okt) {
-    const trekk = P.personar[pid].ovingar.filter((e) => e.gruppe === "Trekk" && e.type === "manual");
+    const trekk = P.personar[pid].ovingar.filter((e) => e.gruppe === "Trekk" && e.type === "manual" && !e.inaktiv);
     return trekk.every((e) => {
       const h = historikkFor(pid, e.id, okt && okt.id);
       if (!h.length) return false;
@@ -390,7 +393,7 @@
     const dag = kalenderDag(iso);
     const o = { id: uid(), person: pid, dato: iso, start: new Date().toISOString(), okt: oktBokstav, oktNr: dag && dag.okt === oktBokstav ? dag.oktNr : null,
       veke: dag ? dag.veke : null, ferdig: false, score: null, kommentar: "", ovingar: {} };
-    for (const ex of P.personar[pid].ovingar.filter((e) => e.okt === oktBokstav)) {
+    for (const ex of P.personar[pid].ovingar.filter((e) => e.okt === oktBokstav && !e.inaktiv)) {
       const h = historikkFor(pid, ex.id, o.id);
       const sist = h.length ? h[h.length - 1].data : null;
       const sett = [];
@@ -442,9 +445,11 @@
     const gjortIdag = S.okter.find((o) => o.person === pid && o.dato === iso && o.ferdig);
     if (gjortIdag) h += `<div class="kort gron"><h3>✓ Økt ${gjortIdag.okt} er fullført i dag</h3><p>Bra jobba! Sjå «Framgang» for oversikt.</p></div>`;
     if (plan.fase === "for") {
-      h += `<div class="kort"><h3>Ny blokk startar måndag 19. oktober</h3>
-        <p>Fram til sundag 18.10 følgjer de det gamle programmet. Første økt i den nye blokka er <strong>økt ${plan.neste.okt}</strong> ${esc(langDato(plan.neste.dato))}.</p></div>`;
-      if (!aktiv) h += `<div class="knapprad">${oktKnapp(plan.neste.okt, `Prøv økt ${plan.neste.okt} no likevel`, "sekundar")}${oktKnapp(plan.neste.okt === "A" ? "B" : "A", `Prøv økt ${plan.neste.okt === "A" ? "B" : "A"}`, "sekundar")}</div>`;
+      const nar = plan.neste ? langDato(plan.neste.dato) : langDato(P.blokk.start);
+      const bokstav = plan.neste ? plan.neste.okt : "A";
+      h += `<div class="kort"><h3>Ny blokk startar ${esc(langDato(P.blokk.start))}</h3>
+        <p>Første økt i blokka er <strong>økt ${bokstav}</strong> ${esc(nar)}.</p></div>`;
+      if (!aktiv && plan.neste) h += `<div class="knapprad">${oktKnapp(plan.neste.okt, `Prøv økt ${plan.neste.okt} no likevel`, "sekundar")}${oktKnapp(plan.neste.okt === "A" ? "B" : "A", `Prøv økt ${plan.neste.okt === "A" ? "B" : "A"}`, "sekundar")}</div>`;
     } else if (plan.fase === "styrke") {
       h += `<div class="kort"><p class="liten">Veke ${plan.dag.veke} · økt ${plan.dag.oktNr} av 12</p><h3>I dag: Styrkeøkt <span class="merke">${plan.dag.okt}</span></h3>
         <p>${esc(plan.dag.tid)} med oppvarming og avslutning.</p></div>`;
@@ -457,7 +462,7 @@
     } else {
       const sist = ferdigeOkter(pid).pop();
       const forslag = sist ? (sist.okt === "A" ? "B" : "A") : "A";
-      h += `<div class="kort"><h3>Blokka 19.10–15.11 er ferdig</h3><p>Vel økt fritt. Forslag: <strong>økt ${forslag}</strong>${sist ? ` (sist: økt ${sist.okt})` : ""}.</p></div>`;
+      h += `<div class="kort"><h3>Blokka ${tilNorsk(P.blokk.start)}–${tilNorsk(P.blokk.slutt)} er ferdig</h3><p>Vel økt fritt. Forslag: <strong>økt ${forslag}</strong>${sist ? ` (sist: økt ${sist.okt})` : ""}.</p></div>`;
       if (!aktiv) h += `<div class="knapprad">${oktKnapp(forslag, `Start økt ${forslag}`)}${oktKnapp(forslag === "A" ? "B" : "A", `Start økt ${forslag === "A" ? "B" : "A"}`, "sekundar")}</div>`;
     }
     const vd = new Date(iso + "T12:00:00").getDay();
@@ -548,7 +553,9 @@
     if (okt.person !== S.person) { S.person = okt.person; lagre(); oppdaterPersonknapp(); }
     const p = P.personar[okt.person];
     setTittel(`Økt ${okt.okt} · ${p.namn}`); markerTab("idag");
-    const ovingar = p.ovingar.filter((e) => e.okt === okt.okt);
+    // Berre øvingar som ligg i denne økta. Inaktive (t.d. bærehandle) kjem med når dei er logga,
+    // og nye øvingar dukkar ikkje opp i eldre økter som ikkje har dei.
+    const ovingar = p.ovingar.filter((e) => e.okt === okt.okt && okt.ovingar && okt.ovingar[e.id] && Array.isArray(okt.ovingar[e.id].sett));
     const antal = ovingar.filter((e) => okt.ovingar[e.id].sett.every((s) => s.ferdig)).length;
     const atle = okt.person === "atle";
     let h = `<div class="okt-hovud"><h2>Økt <span class="merke">${okt.okt}</span> · ${esc(langDato(okt.dato))}</h2>
@@ -681,17 +688,18 @@
     const sistDato = okter.reduce((m, o) => (o.dato > m ? o.dato : m), "");
     const visSynk = !hentToken() && okter.length && (sistDato === idag() || !S.sistTryggleikskopi);
     let h = (visSynk ? `<div class="kort varsel"><h3>Send loggen til den andre eininga</h3><p>Appen på iPhone og iPad har kvar si logg. Del sikkerhetskopien no, og hent ho inn på den andre eininga under Meir.</p><button class="knapp stor full" id="synkSend">Send sikkerhetskopi</button></div>` : "") + `<h2>Framgang for ${esc(p.namn)}</h2>
-      <div class="to-kol"><div class="kort"><h3>Økter i blokka</h3><p style="font-size:2rem;margin:0"><strong>${iBlokk.length}</strong> av 12</p><p class="liten">19.10–15.11.2026 · totalt ${okter.length} fullførte</p></div>
+      <div class="to-kol"><div class="kort"><h3>Økter i blokka</h3><p style="font-size:2rem;margin:0"><strong>${iBlokk.length}</strong> av 12</p><p class="liten">${tilNorsk(P.blokk.start)}–${tilNorsk(P.blokk.slutt)} · totalt ${okter.length} fullførte</p></div>
       <div class="kort"><h3>Kroppsvekt</h3>${vekt.length ? `<p style="font-size:2rem;margin:0"><strong>${kgTekst(vekt[vekt.length - 1].kg)}</strong> kg</p><p class="liten">${pid === "atle" ? `Mål ${kgTekst(p.malVekt)} kg · ${vekt.length > 1 ? `endring ${kgTekst(Math.round((vekt[vekt.length - 1].kg - vekt[0].kg) * 10) / 10)} kg` : ""}` : `Hald over ${p.minVekt} kg`}</p>` : `<p class="liten">Ingen vekt lagra enno.</p>`}</div></div>
       <div class="kort"><h3>Vektutvikling</h3>${linjegraf(vekt.map((v) => ({ x: v.dato, y: v.kg })), { mal: pid === "atle" ? p.malVekt : p.minVekt, tittel: "Vektutvikling" })}</div>`;
     // beste per øving
     h += `<div class="kort"><h3>Beste per øving</h3><p class="liten">Trykk på ei øving for å sjå utviklinga.</p><table class="tabell"><thead><tr><th>Øving</th><th>Beste kg</th><th>Flest</th><th>Gonger</th></tr></thead><tbody>`;
     for (const ex of p.ovingar) {
       const hist = historikkFor(pid, ex.id);
+      if (ex.inaktiv && !hist.length) continue;
       const kg = hist.map((x) => maxKg(x.data)).filter((x) => x != null);
       const rep = hist.flatMap((x) => x.data.sett.filter((s) => s.ferdig).map((s) => s.rep));
       const ein = ex.unit === "s" ? " sek" : ex.unit === "m" ? " m" : "";
-      h += `<tr><td><a href="#/framgang/${encodeURIComponent(ex.id)}">${esc(ex.namn)}</a> <span class="liten">(${ex.okt})</span></td><td>${kg.length ? kgTekst(Math.max(...kg)) : "–"}</td><td>${rep.length ? Math.max(...rep) + ein : "–"}</td><td>${hist.length}</td></tr>`;
+      h += `<tr><td><a href="#/framgang/${encodeURIComponent(ex.id)}">${esc(ex.namn)}</a> <span class="liten">(${ex.okt}${ex.inaktiv ? " · ikkje i økta no" : ""})</span></td><td>${kg.length ? kgTekst(Math.max(...kg)) : "–"}</td><td>${rep.length ? Math.max(...rep) + ein : "–"}</td><td>${hist.length}</td></tr>`;
     }
     h += `</tbody></table></div>`;
     if (valEx) {

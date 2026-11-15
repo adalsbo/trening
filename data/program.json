@@ -1,8 +1,8 @@
 {
- "laga": "2026-10-10 16:48",
+ "laga": "2026-11-15",
  "blokk": {
-  "start": "2026-10-19",
-  "slutt": "2026-11-15"
+  "start": "2026-11-16",
+  "slutt": "2026-12-13"
  },
  "manual": {
   "min": 2,
@@ -38,7 +38,7 @@
      "nr": 1,
      "namn": "Goblet-knebøy til benk",
      "gruppe": null,
-     "status": "Oppgradert frå «Stol-knebøy» (du tok 20×3 djupe knebøy – for lett)",
+     "status": "Same vekt, 3 s ned (tempo) i staden for meir kg",
      "korleis": "Manual inntil brystet, set deg kontrollert ned til benken/stolen, reis deg med vekt på hælane. Rygg lang heile vegen.",
      "settRep": "3 × 8–12",
      "sets": 3,
@@ -55,7 +55,7 @@
      "lett": "Stol-knebøy utan vekt, 2 × 12",
      "pauseTekst": "90 s",
      "pauseSek": 90,
-     "merknad": "Ned til benkhøgd – ikkje djupare enn at korsryggen held seg nøytral.",
+     "merknad": "Ned til benkhøgd – ikkje djupare enn at korsryggen held seg nøytral. Hald same vekt og bruk 3 sekund på veg ned (tempo) i staden for meir kg.",
      "atvaring": false,
      "video": "goblet_benk"
     },
@@ -191,12 +191,37 @@
      "video": "birddog"
     },
     {
+     "id": "atle-A-7-pallof-press-med-strikk",
+     "okt": "A",
+     "nr": 7,
+     "namn": "Pallof-press med strikk",
+     "gruppe": null,
+     "status": "Ny – erstattar bærehandle denne blokka",
+     "korleis": "Stå sidelengs til feste for strikken, hald strikken inn mot brystet, press rett fram og hald 2 s utan å la overkroppen rotere, før tilbake kontrollert.",
+     "settRep": "3 × 10 per side",
+     "sets": 3,
+     "setsMin": 3,
+     "repMin": 10,
+     "repMax": 10,
+     "unit": "rep",
+     "perSide": true,
+     "startKgTekst": "Middels strikk",
+     "type": "strikk",
+     "startKg": null,
+     "lett": "Kortare eller lettare strikk, eller sitjande på benk",
+     "pauseTekst": "45–60 s",
+     "pauseSek": 60,
+     "merknad": "Trenar magen utan å belaste korsryggen.",
+     "atvaring": false,
+     "video": "pallof"
+    },
+    {
      "id": "atle-A-7-baerehandle-farmer-carry",
      "okt": "A",
      "nr": 7,
      "namn": "Bærehandle (farmer carry)",
      "gruppe": null,
-     "status": "Behalde (du gjorde 100 m × 3 med 16 kg i kvar hand)",
+     "status": "Pause denne blokka – ikkje med i nye økter",
      "korleis": "Ein manual i kvar hand, skulderblad i baklomma, blikk fram, rolege steg.",
      "settRep": "3 × 100 m",
      "sets": 3,
@@ -215,7 +240,8 @@
      "pauseSek": 60,
      "merknad": "Generelt ryggvenleg. Stopp når haldninga sviktar.",
      "atvaring": false,
-     "video": "baerehandle"
+     "video": "baerehandle",
+     "inaktiv": true
     },
     {
      "id": "atle-B-1-bakoverutfall-med-manualar",
@@ -472,7 +498,7 @@
      "nr": 2,
      "namn": "Eittarms manualroing støtta på benk",
      "gruppe": "Trekk",
-     "status": "Oppgradert frå «Roing med strik / sekk»",
+     "status": "Bli på 6 kg til 3 × 12, så 6,5 kg",
      "korleis": "Hand og kne på benken, trekk manualen mot hofta med skulderbladet, 1 s pause, senk sakte.",
      "settRep": "3 × 10–12 per side",
      "sets": 3,
@@ -489,7 +515,7 @@
      "lett": "Strikkroing ståande, lett strikk",
      "pauseTekst": "60 s",
      "pauseSek": 60,
-     "merknad": "Hovudøving mot framfalne skuldrer.",
+     "merknad": "Hovudøving mot framfalne skuldrer. Bli på 6 kg til 3 × 12, så 6,5 kg.",
      "atvaring": false,
      "video": "roing_benk"
     },
@@ -549,7 +575,7 @@
      "nr": 5,
      "namn": "Manual-benkpress (etter trekk)",
      "gruppe": "Press",
-     "status": "Oppgradert frå «Skrå armheving»",
+     "status": "Bli på 7,5 kg (trekk før press)",
      "korleis": "Rygg på benken, senk lette manualar til brysthøgd og press opp.",
      "settRep": "2 × 10–12",
      "sets": 2,
@@ -566,7 +592,7 @@
      "lett": "Skrå armheving mot kjøkkenbenk",
      "pauseTekst": "60 s",
      "pauseSek": 60,
-     "merknad": "Press etter trekk, og færre sett enn roinga (som før).",
+     "merknad": "Press etter trekk, og færre sett enn roinga (som før). Bli på 7,5 kg – trekk før press.",
      "atvaring": false,
      "video": "benkpress"
     },
@@ -680,7 +706,7 @@
      "nr": 2,
      "namn": "Sitjande roing med strikk",
      "gruppe": "Trekk",
-     "status": "Behalde (roing)",
+     "status": "Prøv stivare strikk",
      "korleis": "Strak rygg, trekk strikken mot nedre ribbein, skulderblad inn og ned, 1 s pause.",
      "settRep": "3 × 12–15",
      "sets": 3,
@@ -695,9 +721,36 @@
      "lett": "Lett strikk",
      "pauseTekst": "60 s",
      "pauseSek": 60,
-     "merknad": "",
+     "merknad": "Prøv stivare strikk.",
      "atvaring": false,
      "video": "strikkroing"
+    },
+    {
+     "id": "audny-B-3-y-loft-pa-skra-benk",
+     "okt": "B",
+     "nr": 3,
+     "namn": "Y-løft på skrå benk",
+     "gruppe": "Trekk",
+     "status": "Ny – erstattar omvendt flyes denne blokka",
+     "korleis": "Legg deg med magen mot skrå benk (ca. 30–45°), armane heng ned, løft manualane skrått fram og opp i ein Y med tomlane opp, skuldrene ned frå øyro, senk sakte.",
+     "settRep": "3 × 10–12",
+     "sets": 3,
+     "setsMin": 3,
+     "repMin": 10,
+     "repMax": 12,
+     "unit": "rep",
+     "perSide": false,
+     "startKgTekst": "2 × 2 kg",
+     "type": "manual",
+     "startKg": 2.0,
+     "targetKg": 2.0,
+     "twoDumbbells": true,
+     "lett": "Utan vekt",
+     "pauseTekst": "45–60 s",
+     "pauseSek": 60,
+     "merknad": "Skuldrene ned frå øyro. Kjenn det mellom skulderblada, ikkje i nakken.",
+     "atvaring": false,
+     "video": "yloft"
     },
     {
      "id": "audny-B-3-omvendt-flyes-pa-skra-benk",
@@ -705,7 +758,7 @@
      "nr": 3,
      "namn": "Omvendt flyes på skrå benk",
      "gruppe": "Trekk",
-     "status": "Ny",
+     "status": "Erstatta av Y-løft på skrå benk denne blokka",
      "korleis": "Ligg på magen på skrå benk, løft lette manualar ut til sida, skulderblada saman.",
      "settRep": "3 × 12–15",
      "sets": 3,
@@ -724,7 +777,8 @@
      "pauseSek": 60,
      "merknad": "Retter direkte mot framfalne skuldrer. Er 3 kg for tungt til 12 reine rep: bruk strikk til det går.",
      "atvaring": false,
-     "video": "omvendt_flyes"
+     "video": "omvendt_flyes",
+     "inaktiv": true
     },
     {
      "id": "audny-B-4-strikk-fra-kvarandre-band-pull-apart",
@@ -757,7 +811,7 @@
      "nr": 5,
      "namn": "Sitjande skulderpress, lett",
      "gruppe": "Press",
-     "status": "Ny",
+     "status": "Bli på 4,5 kg (trekk før press)",
      "korleis": "Ryggen mot ryggstø/vegg, press lette manualar opp, ribbeina nede.",
      "settRep": "2 × 10",
      "sets": 2,
@@ -774,7 +828,7 @@
      "lett": "Strikkpress (strikk under setet) eller berre til augehøgd",
      "pauseTekst": "60 s",
      "pauseSek": 60,
-     "merknad": "Er 3 kg for tungt: bruk strikk. Stopp ved klemming i skuldra – byt då til veggengel.",
+     "merknad": "Bli på 4,5 kg – trekk før press. Stopp ved klemming i skuldra – byt då til veggengel.",
      "atvaring": false,
      "video": "skulderpress"
     },
@@ -784,7 +838,7 @@
      "nr": 6,
      "namn": "Rumensk markløft, lett",
      "gruppe": "Bein / bakside",
-     "status": "Ny",
+     "status": "Ny blokk: mål 8,5 kg (frå 7,5)",
      "korleis": "Mjuke knær, skyv hofta bakover med lang rygg til manualane er ved knea, reis deg med setet.",
      "settRep": "3 × 10",
      "sets": 3,
@@ -793,15 +847,15 @@
      "repMax": 10,
      "unit": "rep",
      "perSide": false,
-     "startKgTekst": "2 × 6 kg",
+     "startKgTekst": "2 × 8,5 kg",
      "type": "manual",
-     "startKg": 6.0,
-     "targetKg": 6.0,
+     "startKg": 8.5,
+     "targetKg": 8.5,
      "twoDumbbells": true,
      "lett": "Utan vekt, hendene på låra",
      "pauseTekst": "60 s",
      "pauseSek": 60,
-     "merknad": "Bakside og sete – bra for heile ryggen.",
+     "merknad": "Mål 8,5 kg denne blokka (opp frå 7,5 kg). Bakside og sete – bra for heile ryggen.",
      "atvaring": false,
      "video": "rdl"
     },
@@ -898,11 +952,11 @@
    },
    {
     "utstyr": "Benk (flat, helst med skråstilling)",
-    "tekst": "Roing med støtte, benkpress, omvendt flyes på magen, ryggstø ved skulderpress, step-up. Utan skråstilling: sit mot veggen ved skulderpress, og bruk strikk pull-apart i staden for omvendt flyes."
+    "tekst": "Roing med støtte, benkpress, omvendt flyes og Y-løft på magen, ryggstø ved skulderpress, step-up. Utan skråstilling: sit mot veggen ved skulderpress, og bruk strikk pull-apart i staden for omvendt flyes og Y-løft."
    },
    {
     "utstyr": "Strikker (lett, middels, tung)",
-    "tekst": "Andletstrekk, sitjande roing, pull-apart, strikkalternativ for Audny."
+    "tekst": "Andletstrekk, sitjande roing, pull-apart, Pallof-press, strikkalternativ for Audny."
    },
    {
     "utstyr": "Tredemølle og spinningsykkel",
@@ -914,7 +968,7 @@
    }
   ],
   "atvaring": "Dette er eit generelt treningsopplegg, ikkje medisinsk behandling. Atle: med tanke på ryggen bør fastlege eller fysioterapeut sjå over programmet, og du bør ta kontakt ved utstråling til beinet, nummenheit eller nye ryggsmerter. Audny: kontakt lege/fysioterapeut ved skarp skuldersmerte eller osteoporose med brot.",
-  "ingress": "Byggjer vidare på dei to arka dykkar: «Ryggvenleg styrke og vekt» (Atle) og «Styrke, musklar og haldning» (Audny), 21.09–18.10.2026. Start på v2: måndag 19.10.2026 · slutt sundag 15.11.2026. Same dagar for begge, kvar sitt program."
+  "ingress": "Byggjer vidare på dei to arka dykkar: «Ryggvenleg styrke og vekt» (Atle) og «Styrke, musklar og haldning» (Audny), 21.09–18.10.2026. Blokk 1: måndag 19.10.2026 · slutt sundag 15.11.2026. Blokk 2: måndag 16.11.2026 · slutt sundag 13.12.2026. Same dagar for begge, kvar sitt program."
  },
  "kalender": [
   {
@@ -1208,6 +1262,298 @@
    "atle": "Kvile eller 8 min mjuk mobilitet",
    "audny": "8–10 min haldning: veggengel, dørkarm",
    "tid": "0–15 min"
+  },
+  {
+   "dato": "2026-11-16",
+   "vekedag": "Måndag",
+   "veke": 1,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 1
+  },
+  {
+   "dato": "2026-11-17",
+   "vekedag": "Tysdag",
+   "veke": 1,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-18",
+   "vekedag": "Onsdag",
+   "veke": 1,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 2
+  },
+  {
+   "dato": "2026-11-19",
+   "vekedag": "Torsdag",
+   "veke": 1,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-20",
+   "vekedag": "Fredag",
+   "veke": 1,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 3
+  },
+  {
+   "dato": "2026-11-21",
+   "vekedag": "Laurdag",
+   "veke": 1,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Lengre tur 45–60 min om forma er god",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-22",
+   "vekedag": "Sundag",
+   "veke": 1,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Kvile eller 8 min mjuk mobilitet",
+   "audny": "8–10 min haldning: veggengel, dørkarm",
+   "tid": "0–15 min"
+  },
+  {
+   "dato": "2026-11-23",
+   "vekedag": "Måndag",
+   "veke": 2,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 4
+  },
+  {
+   "dato": "2026-11-24",
+   "vekedag": "Tysdag",
+   "veke": 2,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-25",
+   "vekedag": "Onsdag",
+   "veke": 2,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 5
+  },
+  {
+   "dato": "2026-11-26",
+   "vekedag": "Torsdag",
+   "veke": 2,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-27",
+   "vekedag": "Fredag",
+   "veke": 2,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 6
+  },
+  {
+   "dato": "2026-11-28",
+   "vekedag": "Laurdag",
+   "veke": 2,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Lengre tur 45–60 min om forma er god",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-11-29",
+   "vekedag": "Sundag",
+   "veke": 2,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Kvile eller 8 min mjuk mobilitet",
+   "audny": "8–10 min haldning: veggengel, dørkarm",
+   "tid": "0–15 min"
+  },
+  {
+   "dato": "2026-11-30",
+   "vekedag": "Måndag",
+   "veke": 3,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 7
+  },
+  {
+   "dato": "2026-12-01",
+   "vekedag": "Tysdag",
+   "veke": 3,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-02",
+   "vekedag": "Onsdag",
+   "veke": 3,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 8
+  },
+  {
+   "dato": "2026-12-03",
+   "vekedag": "Torsdag",
+   "veke": 3,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-04",
+   "vekedag": "Fredag",
+   "veke": 3,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 9
+  },
+  {
+   "dato": "2026-12-05",
+   "vekedag": "Laurdag",
+   "veke": 3,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Lengre tur 45–60 min om forma er god",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-06",
+   "vekedag": "Sundag",
+   "veke": 3,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Kvile eller 8 min mjuk mobilitet",
+   "audny": "8–10 min haldning: veggengel, dørkarm",
+   "tid": "0–15 min"
+  },
+  {
+   "dato": "2026-12-07",
+   "vekedag": "Måndag",
+   "veke": 4,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 10
+  },
+  {
+   "dato": "2026-12-08",
+   "vekedag": "Tysdag",
+   "veke": 4,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-09",
+   "vekedag": "Onsdag",
+   "veke": 4,
+   "type": "Styrke",
+   "okt": "A",
+   "atle": "Økt A (sjå «Atle – økter»)",
+   "audny": "Økt A (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 11
+  },
+  {
+   "dato": "2026-12-10",
+   "vekedag": "Torsdag",
+   "veke": 4,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Gange 30–45 min, gjerne motbakke",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-11",
+   "vekedag": "Fredag",
+   "veke": 4,
+   "type": "Styrke",
+   "okt": "B",
+   "atle": "Økt B (sjå «Atle – økter»)",
+   "audny": "Økt B (sjå «Audny – økter»)",
+   "tid": "50–60 min",
+   "oktNr": 12
+  },
+  {
+   "dato": "2026-12-12",
+   "vekedag": "Laurdag",
+   "veke": 4,
+   "type": "Gåtur",
+   "okt": null,
+   "atle": "Lengre tur 45–60 min om forma er god",
+   "audny": "Gange 20–35 min, oppreist bryst, gjerne stavar",
+   "tid": "20–60 min"
+  },
+  {
+   "dato": "2026-12-13",
+   "vekedag": "Sundag",
+   "veke": 4,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Kvile eller 8 min mjuk mobilitet",
+   "audny": "8–10 min haldning: veggengel, dørkarm",
+   "tid": "0–15 min"
   }
  ],
  "progresjon": [
@@ -1243,7 +1589,7 @@
   },
   {
    "steg": "Audny: trekk fyrst",
-   "regel": "Auk roing, andletstrekk og omvendt flyes før pressøvingane. Ved klemming i skuldra går de tilbake eitt steg.",
+   "regel": "Auk roing, andletstrekk og Y-løft før pressøvingane. Ved klemming i skuldra går de tilbake eitt steg.",
    "doeme": null
   },
   {
@@ -1252,8 +1598,8 @@
    "doeme": "Goblet-knebøy 3 × 12 med 22 kg → 3 × 8 med 3 s ned og 1 s pause nede."
   },
   {
-   "steg": "Audny: lettaste er 3 kg",
-   "regel": "Er 3 kg for tungt på omvendt flyes eller skulderpress, bruk strikk (pull-apart / strikkpress) til du klarer 12 reine rep med 3 kg.",
+   "steg": "Audny: lettaste er 2 kg",
+   "regel": "Er 2 kg for tungt på Y-løft, gjer øvinga utan vekt. Er skulderpress for tungt, bruk strikkpress til du klarer 10 reine rep.",
    "doeme": null
   },
   {
@@ -1360,6 +1706,20 @@
    "reserveTittel": "Bench Chest Supported Dumbbell Reverse Flys",
    "reserveKjelde": "Functional Effect Fitness & Rehabilitation",
    "merknad": "Magen mot skrå benk, som i programmet."
+  },
+  {
+   "id": "yloft",
+   "namn": "Y-løft på skrå benk",
+   "gjeld": "Audny",
+   "teknikk": "Magen mot skrå benk (ca. 30–45°), armane heng ned. Løft lette manualar skrått fram og opp i ein Y med tomlane opp, skuldrene ned frå øyro, senk sakte. (Video: Manualar på skrå benk, som i programmet.)",
+   "feil": "For tung vekt, skuldrene opp mot øyro, sving med ryggen.",
+   "videoUrl": "https://www.youtube.com/watch?v=7unTGBy-flk",
+   "videoTittel": "Dumbbell Incline Y Raise",
+   "kjelde": "Alex Thieme",
+   "reserveUrl": "https://www.youtube.com/watch?v=cDOst65Pz-U",
+   "reserveTittel": "5 BEST Lower Trap Exercises!",
+   "reserveKjelde": "AMR Physiotherapy",
+   "merknad": "Manualar på skrå benk, som i programmet. I reservevideoen er Y-løftet den første øvinga."
   },
   {
    "id": "pullapart",
@@ -1626,6 +1986,20 @@
    "reserveTittel": "Most Men Over 50 Are Doing Farmer's Carries Wrong (Fix It Now)",
    "reserveKjelde": "Fit After 50",
    "merknad": null
+  },
+  {
+   "id": "pallof",
+   "namn": "Pallof-press med strikk",
+   "gjeld": "Atle",
+   "teknikk": "Stå sidelengs til festa for strikken, hald strikken inn mot brystet og press rett fram. Hald 2 s utan at overkroppen roterer, og før tilbake kontrollert. (Video: Strikk i dør, som heime.)",
+   "feil": "Overkroppen vrir seg mot strikken, svai i korsryggen, skuldrene opp mot øyro.",
+   "videoUrl": "https://www.youtube.com/watch?v=n8ZZG9gElhs",
+   "videoTittel": "How to Do a Pallof Press: A Guide from Physical Therapists",
+   "kjelde": "Hinge Health (fysioterapeutar)",
+   "reserveUrl": "https://www.youtube.com/watch?v=f_D0GByfZh0",
+   "reserveTittel": "Pallof Press",
+   "reserveKjelde": "The Barbell Physio",
+   "merknad": "Strikk i dør, som heime. Trenar magen utan å belaste korsryggen."
   },
   {
    "id": "armsirklar",
