@@ -1,8 +1,8 @@
 {
  "laga": "2026-11-15",
  "blokk": {
-  "start": "2026-11-16",
-  "slutt": "2026-12-13"
+  "start": "2026-11-23",
+  "slutt": "2026-12-20"
  },
  "manual": {
   "min": 2,
@@ -1266,6 +1266,76 @@
   {
    "dato": "2026-11-16",
    "vekedag": "Måndag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-17",
+   "vekedag": "Tysdag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-18",
+   "vekedag": "Onsdag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-19",
+   "vekedag": "Torsdag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-20",
+   "vekedag": "Fredag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-21",
+   "vekedag": "Laurdag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-22",
+   "vekedag": "Sundag",
+   "veke": null,
+   "type": "Kvile",
+   "okt": null,
+   "atle": "Pause – ingen plan",
+   "audny": "Pause – ingen plan",
+   "tid": "0 min"
+  },
+  {
+   "dato": "2026-11-23",
+   "vekedag": "Måndag",
    "veke": 1,
    "type": "Styrke",
    "okt": "A",
@@ -1275,7 +1345,7 @@
    "oktNr": 1
   },
   {
-   "dato": "2026-11-17",
+   "dato": "2026-11-24",
    "vekedag": "Tysdag",
    "veke": 1,
    "type": "Gåtur",
@@ -1285,7 +1355,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-18",
+   "dato": "2026-11-25",
    "vekedag": "Onsdag",
    "veke": 1,
    "type": "Styrke",
@@ -1296,7 +1366,7 @@
    "oktNr": 2
   },
   {
-   "dato": "2026-11-19",
+   "dato": "2026-11-26",
    "vekedag": "Torsdag",
    "veke": 1,
    "type": "Gåtur",
@@ -1306,7 +1376,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-20",
+   "dato": "2026-11-27",
    "vekedag": "Fredag",
    "veke": 1,
    "type": "Styrke",
@@ -1317,7 +1387,7 @@
    "oktNr": 3
   },
   {
-   "dato": "2026-11-21",
+   "dato": "2026-11-28",
    "vekedag": "Laurdag",
    "veke": 1,
    "type": "Gåtur",
@@ -1327,7 +1397,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-22",
+   "dato": "2026-11-29",
    "vekedag": "Sundag",
    "veke": 1,
    "type": "Kvile",
@@ -1337,7 +1407,7 @@
    "tid": "0–15 min"
   },
   {
-   "dato": "2026-11-23",
+   "dato": "2026-11-30",
    "vekedag": "Måndag",
    "veke": 2,
    "type": "Styrke",
@@ -1348,7 +1418,7 @@
    "oktNr": 4
   },
   {
-   "dato": "2026-11-24",
+   "dato": "2026-12-01",
    "vekedag": "Tysdag",
    "veke": 2,
    "type": "Gåtur",
@@ -1358,7 +1428,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-25",
+   "dato": "2026-12-02",
    "vekedag": "Onsdag",
    "veke": 2,
    "type": "Styrke",
@@ -1369,7 +1439,7 @@
    "oktNr": 5
   },
   {
-   "dato": "2026-11-26",
+   "dato": "2026-12-03",
    "vekedag": "Torsdag",
    "veke": 2,
    "type": "Gåtur",
@@ -1379,7 +1449,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-27",
+   "dato": "2026-12-04",
    "vekedag": "Fredag",
    "veke": 2,
    "type": "Styrke",
@@ -1390,7 +1460,7 @@
    "oktNr": 6
   },
   {
-   "dato": "2026-11-28",
+   "dato": "2026-12-05",
    "vekedag": "Laurdag",
    "veke": 2,
    "type": "Gåtur",
@@ -1400,7 +1470,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-11-29",
+   "dato": "2026-12-06",
    "vekedag": "Sundag",
    "veke": 2,
    "type": "Kvile",
@@ -1410,7 +1480,7 @@
    "tid": "0–15 min"
   },
   {
-   "dato": "2026-11-30",
+   "dato": "2026-12-07",
    "vekedag": "Måndag",
    "veke": 3,
    "type": "Styrke",
@@ -1421,7 +1491,7 @@
    "oktNr": 7
   },
   {
-   "dato": "2026-12-01",
+   "dato": "2026-12-08",
    "vekedag": "Tysdag",
    "veke": 3,
    "type": "Gåtur",
@@ -1431,7 +1501,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-02",
+   "dato": "2026-12-09",
    "vekedag": "Onsdag",
    "veke": 3,
    "type": "Styrke",
@@ -1442,7 +1512,7 @@
    "oktNr": 8
   },
   {
-   "dato": "2026-12-03",
+   "dato": "2026-12-10",
    "vekedag": "Torsdag",
    "veke": 3,
    "type": "Gåtur",
@@ -1452,7 +1522,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-04",
+   "dato": "2026-12-11",
    "vekedag": "Fredag",
    "veke": 3,
    "type": "Styrke",
@@ -1463,7 +1533,7 @@
    "oktNr": 9
   },
   {
-   "dato": "2026-12-05",
+   "dato": "2026-12-12",
    "vekedag": "Laurdag",
    "veke": 3,
    "type": "Gåtur",
@@ -1473,7 +1543,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-06",
+   "dato": "2026-12-13",
    "vekedag": "Sundag",
    "veke": 3,
    "type": "Kvile",
@@ -1483,7 +1553,7 @@
    "tid": "0–15 min"
   },
   {
-   "dato": "2026-12-07",
+   "dato": "2026-12-14",
    "vekedag": "Måndag",
    "veke": 4,
    "type": "Styrke",
@@ -1494,7 +1564,7 @@
    "oktNr": 10
   },
   {
-   "dato": "2026-12-08",
+   "dato": "2026-12-15",
    "vekedag": "Tysdag",
    "veke": 4,
    "type": "Gåtur",
@@ -1504,7 +1574,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-09",
+   "dato": "2026-12-16",
    "vekedag": "Onsdag",
    "veke": 4,
    "type": "Styrke",
@@ -1515,7 +1585,7 @@
    "oktNr": 11
   },
   {
-   "dato": "2026-12-10",
+   "dato": "2026-12-17",
    "vekedag": "Torsdag",
    "veke": 4,
    "type": "Gåtur",
@@ -1525,7 +1595,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-11",
+   "dato": "2026-12-18",
    "vekedag": "Fredag",
    "veke": 4,
    "type": "Styrke",
@@ -1536,7 +1606,7 @@
    "oktNr": 12
   },
   {
-   "dato": "2026-12-12",
+   "dato": "2026-12-19",
    "vekedag": "Laurdag",
    "veke": 4,
    "type": "Gåtur",
@@ -1546,7 +1616,7 @@
    "tid": "20–60 min"
   },
   {
-   "dato": "2026-12-13",
+   "dato": "2026-12-20",
    "vekedag": "Sundag",
    "veke": 4,
    "type": "Kvile",
