@@ -166,7 +166,7 @@ fg = framgang()
 data = {
     "laga": dt.datetime.now().strftime("%Y-%m-%d %H:%M"),
     "kjelde": XLSX.name,
-    "blokk": {"start": "2026-10-19", "slutt": "2026-11-15"},
+    "blokk": {"start": "2026-11-23", "slutt": "2026-12-20"},
     "manual": {"min": 2, "max": 22, "trinn": [2, 3, 4.5, 5.5, 6.5, 7.5, 8.5, 9, 10, 12, 14.5, 16, 18, 20, 22]},
     "personar": {
         "atle": {"namn": "Atle", "scoreNamn": "Rygg", "scoreTekst": "Rygg 1–5: 1 = ingen plage, 3 = kjennbar men styrbar, 5 = skarp/utstrålande.",

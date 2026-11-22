@@ -455,7 +455,8 @@
         <p>${esc(plan.dag.tid)} med oppvarming og avslutning.</p></div>`;
       if (!aktiv && !gjortIdag) h += oktKnapp(plan.dag.okt, `Start økt ${plan.dag.okt}`) + `<div class="knapprad">${oktKnapp(plan.dag.okt === "A" ? "B" : "A", `Byt til økt ${plan.dag.okt === "A" ? "B" : "A"}`, "sekundar")}</div>`;
     } else if (plan.fase === "annan") {
-      h += `<div class="kort"><p class="liten">Veke ${plan.dag.veke}</p><h3>I dag: ${esc(plan.dag.type)}</h3><p>${esc(plan.dag[pid])} (${esc(plan.dag.tid)})</p>
+      const vekeLinje = plan.dag.veke ? `<p class="liten">Veke ${plan.dag.veke}</p>` : "";
+      h += `<div class="kort">${vekeLinje}<h3>I dag: ${esc(plan.dag.type)}</h3><p>${esc(plan.dag[pid])} (${esc(plan.dag.tid)})</p>
         ${plan.dag.type === "Gåtur" ? `<p class="liten">Dårleg vêr? Bruk tredemølla eller spinningsykkelen.</p>` : ""}</div>`;
       if (plan.neste) h += `<div class="kort"><p>Neste styrkeøkt: <strong>økt ${plan.neste.okt}</strong> ${esc(langDato(plan.neste.dato))}.</p></div>`;
       if (!aktiv && plan.neste) h += `<details><summary>Tok de ikkje økta i går? Start likevel</summary><div class="knapprad">${oktKnapp(plan.neste.okt, `Start økt ${plan.neste.okt}`, "sekundar")}${oktKnapp(plan.neste.okt === "A" ? "B" : "A", `Start økt ${plan.neste.okt === "A" ? "B" : "A"}`, "sekundar")}</div></details>`;

@@ -20,7 +20,7 @@ Programdataa (`data/program.json`) blir laga frå arbeidsboka i Excel – ikkje 
    ```
    (Krev Python 3 med `openpyxl`. `--offentleg` tek bort startvekt og brukar ei privat regelfil,
    `/workspace/build/offentleg_erstatt.json` på boksen, som skriv om helseopplysningar. Den fila skal ikkje inn i repoet.)
-3. Ved endringar i andre filer enn `data/program.json`: auk `VERSJON` i `js/versjon.js` (t.d. `treningsapp-v16`). Det namnet er cache-namnet i `sw.js` og talet som visest i appen (`v16` i toppfeltet, «Versjon 16» under Meir). Elles kan appen halde fram med gamle filer.
+3. Ved endringar i andre filer enn `data/program.json`: auk `VERSJON` i `js/versjon.js` (t.d. `treningsapp-v17`). Det namnet er cache-namnet i `sw.js` og talet som visest i appen (`v17` i toppfeltet, «Versjon 17» under Meir). Elles kan appen halde fram med gamle filer.
 4. Last opp:
    ```
    git add -A && git commit -m "Oppdatert program" && git push
